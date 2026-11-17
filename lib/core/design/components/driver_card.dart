@@ -87,11 +87,14 @@ class DriverCard extends StatelessWidget {
                 children: [
                   Icon(Icons.local_shipping_outlined, size: 16, color: colors.textSecondary),
                   const SizedBox(width: 6),
-                  Text(
-                    assignedTruckPlate.isNotEmpty ? assignedTruckPlate : "Unassigned",
-                    style: AppTypography.supporting(colors.text, fontSize: 12, isNumber: true),
+                  Expanded(
+                    child: Text(
+                      assignedTruckPlate.isNotEmpty ? assignedTruckPlate : "Unassigned",
+                      style: AppTypography.supporting(colors.text, fontSize: 12, isNumber: true),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   Text(
                     "$experienceYears yrs exp",
                     style: AppTypography.supporting(colors.textSecondary, fontSize: 12),

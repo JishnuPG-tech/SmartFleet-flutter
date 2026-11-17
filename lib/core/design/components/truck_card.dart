@@ -59,10 +59,14 @@ class TruckCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    plate,
-                    style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
+                  Expanded(
+                    child: Text(
+                      plate,
+                      style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   chip,
                 ],
               ),
