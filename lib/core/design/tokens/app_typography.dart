@@ -8,7 +8,7 @@ class AppTypography {
     required double fontSize,
     required FontWeight fontWeight,
     required Color color,
-    double height = 1.4,
+    double height = 1.35,
     bool isMalayalam = false,
     bool isNumber = false,
   }) {
@@ -18,15 +18,26 @@ class AppTypography {
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
-      height: isMalayalam ? (height < 1.55 ? 1.55 : height) : height,
+      height: isMalayalam ? (height < 1.5 ? 1.5 : height) : height,
       fontFeatures: isNumber ? const [FontFeature.tabularFigures()] : null,
     );
   }
 
-  // Display 32/700
-  static TextStyle display(Color color, {bool isMalayalam = false, bool isNumber = false}) =>
+  // Operational Main Values: 28-32 sp (Bold)
+  static TextStyle value(Color color, {double fontSize = 28, bool isMalayalam = false, bool isNumber = true}) =>
       _baseStyle(
-        fontSize: 32,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+        color: color,
+        height: 1.2,
+        isMalayalam: isMalayalam,
+        isNumber: isNumber,
+      );
+
+  // Screen Title: 24-28 sp (Bold)
+  static TextStyle title(Color color, {double fontSize = 24, bool isMalayalam = false, bool isNumber = false}) =>
+      _baseStyle(
+        fontSize: fontSize,
         fontWeight: FontWeight.w700,
         color: color,
         height: 1.25,
@@ -34,47 +45,65 @@ class AppTypography {
         isNumber: isNumber,
       );
 
-  // Title 24/700
-  static TextStyle title(Color color, {bool isMalayalam = false, bool isNumber = false}) =>
+  // Section Headings: 16-18 sp (SemiBold)
+  static TextStyle section(Color color, {double fontSize = 16, bool isMalayalam = false, bool isNumber = false}) =>
       _baseStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w600,
         color: color,
         height: 1.3,
         isMalayalam: isMalayalam,
         isNumber: isNumber,
       );
 
-  // Heading 20/600
+  // Heading alias for backward-compatibility
   static TextStyle heading(Color color, {bool isMalayalam = false, bool isNumber = false}) =>
+      section(color, fontSize: 18, isMalayalam: isMalayalam, isNumber: isNumber);
+
+  // Display alias
+  static TextStyle display(Color color, {bool isMalayalam = false, bool isNumber = false}) =>
+      value(color, fontSize: 28, isMalayalam: isMalayalam, isNumber: isNumber);
+
+  // Primary Body: 16-18 sp (Medium/Regular)
+  static TextStyle body(Color color, {double fontSize = 16, bool isMalayalam = false, bool isNumber = false}) =>
       _baseStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w400,
+        color: color,
+        height: 1.4,
+        isMalayalam: isMalayalam,
+        isNumber: isNumber,
+      );
+
+  // Supporting / Meta Text: 14-16 sp (Regular)
+  static TextStyle supporting(Color color, {double fontSize = 14, bool isMalayalam = false, bool isNumber = false}) =>
+      _baseStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w400,
         color: color,
         height: 1.35,
         isMalayalam: isMalayalam,
         isNumber: isNumber,
       );
 
-  // Body 18/400 (Minimum body size)
-  static TextStyle body(Color color, {bool isMalayalam = false, bool isNumber = false}) =>
+  // Label: 14-16 sp (SemiBold)
+  static TextStyle label(Color color, {double fontSize = 14, bool isMalayalam = false, bool isNumber = false}) =>
       _baseStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w400,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w600,
         color: color,
-        height: 1.45,
+        height: 1.3,
         isMalayalam: isMalayalam,
         isNumber: isNumber,
       );
 
-  // Label 16/600 (Absolute minimum size in the app)
-  static TextStyle label(Color color, {bool isMalayalam = false, bool isNumber = false}) =>
+  // Buttons: 16-18 sp (SemiBold)
+  static TextStyle button(Color color, {double fontSize = 16, bool isMalayalam = false}) =>
       _baseStyle(
-        fontSize: 16,
+        fontSize: fontSize,
         fontWeight: FontWeight.w600,
         color: color,
-        height: 1.4,
+        height: 1.25,
         isMalayalam: isMalayalam,
-        isNumber: isNumber,
       );
 }

@@ -18,8 +18,13 @@ class SettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
+      backgroundColor: colors.bg,
       appBar: AppBar(
-        title: Text(l10n.settingsTitle, style: AppTypography.title(colors.text)),
+        title: Text(l10n.settingsTitle, style: AppTypography.title(colors.text, fontSize: 22)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: colors.border, height: 1.0),
+        ),
       ),
       body: AnimatedBuilder(
         animation: ThemeController.instance,
@@ -27,11 +32,11 @@ class SettingsScreen extends StatelessWidget {
           final currentMode = ThemeController.instance.mode;
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
-              // 1. THEME MODE PICKER (3 BIG TILES WITH PREVIEWS)
-              Text("Theme Appearance", style: AppTypography.heading(colors.text)),
-              const SizedBox(height: 12),
+              // 1. THEME MODE PICKER (Midnight Black & Pure White)
+              Text("Theme", style: AppTypography.section(colors.text, fontSize: 16)),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -47,59 +52,74 @@ class SettingsScreen extends StatelessWidget {
                   Expanded(
                     child: _buildThemeTile(
                       context,
-                      label: "Light",
+                      label: "Pure White",
                       mode: ThemeMode.light,
                       isSelected: currentMode == ThemeMode.light,
-                      bgPreview: const Color(0xFFF6F7F9),
+                      bgPreview: const Color(0xFFFFFFFF),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildThemeTile(
                       context,
-                      label: "Dark",
+                      label: "Midnight",
                       mode: ThemeMode.dark,
                       isSelected: currentMode == ThemeMode.dark,
-                      bgPreview: const Color(0xFF0E1116),
+                      bgPreview: const Color(0xFF080A08),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // 2. LANGUAGE SWITCH
-              Text(l10n.selectLanguage, style: AppTypography.heading(colors.text)),
-              const SizedBox(height: 12),
-              Card(
+              Text(l10n.selectLanguage, style: AppTypography.section(colors.text, fontSize: 16)),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: AppSpacing.cardBorderRadius,
+                  border: Border.all(color: colors.border, width: 1.0),
+                ),
                 child: ListTile(
-                  leading: const Icon(Icons.language_rounded),
+                  leading: Icon(Icons.language_rounded, color: colors.brand, size: 22),
                   title: Text(
                     Localizations.localeOf(context).languageCode == "ml" ? "മലയാളം (Malayalam)" : "English",
-                    style: AppTypography.heading(colors.text),
+                    style: AppTypography.section(colors.text, fontSize: 15),
                   ),
                   trailing: OutlinedButton(
-                    style: OutlinedButton.styleFrom(minimumSize: const Size(100, 40)),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(90, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
                     onPressed: onToggleLanguage,
                     child: Text(
                       Localizations.localeOf(context).languageCode == "ml" ? "English" : "മലയാളം",
-                      style: AppTypography.label(colors.brand),
+                      style: AppTypography.supporting(colors.brand, fontSize: 13).copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
 
               // 3. DEVELOPER COMPONENT GALLERY
-              Text("Developer Preview", style: AppTypography.heading(colors.text)),
-              const SizedBox(height: 12),
-              Card(
+              Text("Developer tools", style: AppTypography.section(colors.text, fontSize: 16)),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: AppSpacing.cardBorderRadius,
+                  border: Border.all(color: colors.border, width: 1.0),
+                ),
                 child: ListTile(
-                  leading: Icon(Icons.widgets_outlined, color: colors.brand),
-                  title: Text("Design Component Gallery", style: AppTypography.heading(colors.text)),
-                  subtitle: Text("View all components, themes, scales & Malayalam", style: AppTypography.body(colors.textSecondary)),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  leading: Icon(Icons.widgets_outlined, color: colors.brand, size: 22),
+                  title: Text("Component Gallery", style: AppTypography.section(colors.text, fontSize: 15)),
+                  subtitle: Text("Inspect all tokens, components & contrast", style: AppTypography.supporting(colors.textSecondary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right_rounded, size: 20),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -109,15 +129,15 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 36),
+              const SizedBox(height: 32),
 
               // 4. SWITCH ROLE / LOGOUT
               SizedBox(
-                height: 56,
+                height: 48,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colors.statusDanger,
-                    side: BorderSide(color: colors.statusDanger.withValues(alpha: 0.5), width: 1.5),
+                    side: BorderSide(color: colors.statusDanger.withValues(alpha: 0.4), width: 1.0),
                     shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
                   ),
                   onPressed: () {
@@ -132,9 +152,9 @@ class SettingsScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.logout_rounded, size: 22),
+                      const Icon(Icons.logout_rounded, size: 20),
                       const SizedBox(width: 8),
-                      Text(l10n.btnLogout, style: AppTypography.heading(colors.statusDanger)),
+                      Text(l10n.btnLogout, style: AppTypography.button(colors.statusDanger, fontSize: 15)),
                     ],
                   ),
                 ),
@@ -159,34 +179,37 @@ class SettingsScreen extends StatelessWidget {
       onTap: () => ThemeController.instance.setThemeMode(mode),
       borderRadius: AppSpacing.cardBorderRadius,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: colors.surface,
           borderRadius: AppSpacing.cardBorderRadius,
           border: Border.all(
             color: isSelected ? colors.brand : colors.border,
-            width: isSelected ? 2.5 : 1.0,
+            width: isSelected ? 2.0 : 1.0,
           ),
         ),
         child: Column(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 color: bgPreview,
                 shape: BoxShape.circle,
-                border: Border.all(color: colors.border, width: 1.5),
+                border: Border.all(color: colors.border, width: 1.0),
               ),
               child: isSelected
-                  ? Icon(Icons.check, size: 18, color: mode == ThemeMode.dark ? Colors.white : colors.brand)
+                  ? Icon(Icons.check, size: 16, color: mode == ThemeMode.dark ? colors.brand : const Color(0xFF080A08))
                   : null,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               label,
-              style: AppTypography.label(
+              style: AppTypography.supporting(
                 isSelected ? colors.brand : colors.text,
+                fontSize: 12,
+              ).copyWith(
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],

@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
-import '../../../core/design/tokens/app_colors.dart';
-import '../../../core/design/tokens/app_typography.dart';
-import '../../../core/design/tokens/app_spacing.dart';
-import '../../../core/design/components/truck_card.dart';
-import '../../../core/design/components/status_chip.dart';
-import '../../../core/data/models/truck.dart';
-import '../../../core/data/models/trip.dart';
-import '../../../core/data/models/driver.dart';
-import '../../../core/data/fleet_repository.dart';
-import '../../../core/maps/smart_fleet_map.dart';
-import '../../../l10n/app_localizations.dart';
+import "package:flutter/material.dart";
+import "package:latlong2/latlong.dart";
+import "../../../core/design/tokens/app_colors.dart";
+import "../../../core/design/tokens/app_typography.dart";
+import "../../../core/design/tokens/app_spacing.dart";
+import "../../../core/design/components/truck_card.dart";
+import "../../../core/design/components/status_chip.dart";
+import "../../../core/data/models/truck.dart";
+import "../../../core/data/models/trip.dart";
+import "../../../core/data/models/driver.dart";
+import "../../../core/data/fleet_repository.dart";
+import "../../../core/maps/smart_fleet_map.dart";
+import "../../../l10n/app_localizations.dart";
 
 class AdminFleetTab extends StatefulWidget {
   const AdminFleetTab({super.key});
@@ -61,20 +61,20 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                       child: Row(
                         children: [
                           Text(
-                            "${trucks.length} Trucks in Fleet",
-                            style: AppTypography.heading(colors.text, isNumber: true),
+                            "${trucks.length} Trucks",
+                            style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
                           ),
                           const Spacer(),
                           SegmentedButton<bool>(
                             segments: const [
                               ButtonSegment<bool>(
                                 value: false,
-                                icon: Icon(Icons.view_list_rounded, size: 18),
+                                icon: Icon(Icons.view_list_rounded, size: 16),
                                 label: Text("List"),
                               ),
                               ButtonSegment<bool>(
                                 value: true,
-                                icon: Icon(Icons.map_rounded, size: 18),
+                                icon: Icon(Icons.map_rounded, size: 16),
                                 label: Text("Map"),
                               ),
                             ],
@@ -87,7 +87,7 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                             },
                             style: ButtonStyle(
                               visualDensity: VisualDensity.compact,
-                              textStyle: WidgetStatePropertyAll(AppTypography.label(colors.text)),
+                              textStyle: WidgetStatePropertyAll(AppTypography.supporting(colors.text, fontSize: 13)),
                             ),
                           ),
                         ],
@@ -134,11 +134,11 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                                     left: 16,
                                     right: 16,
                                     child: Container(
-                                      padding: const EdgeInsets.all(14),
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                       decoration: BoxDecoration(
                                         color: colors.surface,
                                         borderRadius: AppSpacing.cardBorderRadius,
-                                        border: Border.all(color: colors.border, width: 1.5),
+                                        border: Border.all(color: colors.border, width: 1.0),
                                         boxShadow: AppSpacing.lightCardShadow,
                                       ),
                                       child: Column(
@@ -150,7 +150,7 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                                               Expanded(
                                                 child: Text(
                                                   _selectedTruck!.plate,
-                                                  style: AppTypography.heading(colors.text, isNumber: true),
+                                                  style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
                                                 ),
                                               ),
                                               if (_selectedTruck!.status == TruckStatus.inWorkshop)
@@ -161,7 +161,7 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                                                 StatusChipV2.success(label: l10n.statusAvailable),
                                               const SizedBox(width: 8),
                                               IconButton(
-                                                icon: const Icon(Icons.close_rounded),
+                                                icon: const Icon(Icons.close_rounded, size: 18),
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                                 onPressed: () => setState(() => _selectedTruck = null),
@@ -170,17 +170,17 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            "${_selectedTruck!.model} · ${_selectedTruck!.capacityTons} Tons",
-                                            style: AppTypography.body(colors.textSecondary),
+                                            "${_selectedTruck!.model} · ${_selectedTruck!.capacityTons.toStringAsFixed(0)}T",
+                                            style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 6),
                                           Row(
                                             children: [
-                                              Icon(Icons.person_rounded, size: 18, color: colors.brand),
+                                              Icon(Icons.person_rounded, size: 16, color: colors.brand),
                                               const SizedBox(width: 6),
                                               Text(
                                                 driverMap[_selectedTruck!.assignedDriverId] ?? "Unassigned",
-                                                style: AppTypography.label(colors.text),
+                                                style: AppTypography.supporting(colors.text, fontSize: 13),
                                               ),
                                             ],
                                           ),
@@ -191,7 +191,7 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                               ],
                             )
                           : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                               itemCount: trucks.length,
                               itemBuilder: (context, index) {
                                 final truck = trucks[index];
@@ -207,7 +207,7 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                                 }
 
                                 return Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.only(bottom: 8),
                                   child: TruckCard(
                                     plate: truck.plate,
                                     model: truck.model,

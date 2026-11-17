@@ -43,30 +43,30 @@ class TokenPair {
 void main() {
   final pairs = [
     // Light Theme
-    const TokenPair("Light", "Text on Background", 0x0E1116, 0xF6F7F9),
-    const TokenPair("Light", "Text on Surface", 0x0E1116, 0xFFFFFF),
-    const TokenPair("Light", "TextSecondary on Background", 0x46505C, 0xF6F7F9),
-    const TokenPair("Light", "TextSecondary on Surface", 0x46505C, 0xFFFFFF),
-    const TokenPair("Light", "onBrand on Brand", 0xFFFFFF, 0x1F4BDB),
-    const TokenPair("Light", "Success on Container", 0x0B6E3A, 0xE7F7EE),
-    const TokenPair("Light", "Brand on Container", 0x1F4BDB, 0xEDF2FE),
-    const TokenPair("Light", "Waiting on Container", 0x8D5300, 0xFEF6E7),
-    const TokenPair("Light", "Danger on Container", 0xC62828, 0xFDE8E8),
+    const TokenPair("Light", "Text on Background", 0x111111, 0xFFFFFF),
+    const TokenPair("Light", "Text on Surface", 0x111111, 0xF5F6F2),
+    const TokenPair("Light", "TextSecondary on Background", 0x555B52, 0xFFFFFF),
+    const TokenPair("Light", "TextSecondary on Surface", 0x555B52, 0xF5F6F2),
+    const TokenPair("Light", "onBrand on Brand", 0xFFFFFF, 0x526B00),
+    const TokenPair("Light", "Success on Container", 0x385800, 0xEBF5D8),
+    const TokenPair("Light", "Brand on Container", 0x526B00, 0xEBF5D8),
+    const TokenPair("Light", "Waiting on Container", 0x895000, 0xFDF1D8),
+    const TokenPair("Light", "Danger on Container", 0xB42318, 0xFEE4E2),
 
     // Dark Theme
-    const TokenPair("Dark", "Text on Background", 0xF2F4F7, 0x0E1116),
-    const TokenPair("Dark", "Text on Surface", 0xF2F4F7, 0x161B22),
-    const TokenPair("Dark", "TextSecondary on Background", 0xAAB3BF, 0x0E1116),
-    const TokenPair("Dark", "TextSecondary on Surface", 0xAAB3BF, 0x161B22),
-    const TokenPair("Dark", "onBrand on Brand", 0x0A0F1F, 0x6C8DFF),
-    const TokenPair("Dark", "Success on Container", 0x3DD68C, 0x0C2B1C),
-    const TokenPair("Dark", "Brand on Container", 0x6C8DFF, 0x162244),
-    const TokenPair("Dark", "Waiting on Container", 0xFFB84D, 0x362100),
-    const TokenPair("Dark", "Danger on Container", 0xFF6B6B, 0x3B0D0D),
+    const TokenPair("Dark", "Text on Background", 0xFFFFFF, 0x080A08),
+    const TokenPair("Dark", "Text on Surface", 0xFFFFFF, 0x111411),
+    const TokenPair("Dark", "TextSecondary on Background", 0xB4BBB0, 0x080A08),
+    const TokenPair("Dark", "TextSecondary on Surface", 0xB4BBB0, 0x111411),
+    const TokenPair("Dark", "onBrand on Brand", 0x080A08, 0xC6FF00),
+    const TokenPair("Dark", "Success on Container", 0xC6FF00, 0x182604),
+    const TokenPair("Dark", "Brand on Container", 0xC6FF00, 0x182604),
+    const TokenPair("Dark", "Waiting on Container", 0xFFB84D, 0x2E1E05),
+    const TokenPair("Dark", "Danger on Container", 0xFFFF6565, 0x2D0F0F),
   ];
 
   print("================================================================================");
-  print(" SMARTFLEET UI v2 - WCAG AAA/AA CONTRAST RATIO VERIFICATION (TARGET >= 4.5:1) ");
+  print(" SMARTFLEET MIDNIGHT & ACID LIME - WCAG AAA/AA CONTRAST VERIFICATION ");
   print("================================================================================");
   print("THEME | TOKEN PAIR                | FOREGROUND | BACKGROUND | RATIO    | RESULT ");
   print("------+---------------------------+------------+------------+----------+--------");

@@ -3,6 +3,69 @@ import "../tokens/app_colors.dart";
 import "../tokens/app_typography.dart";
 import "../tokens/app_spacing.dart";
 
+/// Compact metric card designed for high-density horizontal metric strips
+class CompactMetricTile extends StatelessWidget {
+  final String label;
+  final int count;
+  final IconData icon;
+  final Color? accentColor;
+  final VoidCallback? onTap;
+
+  const CompactMetricTile({
+    super.key,
+    required this.label,
+    required this.count,
+    required this.icon,
+    this.accentColor,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final color = accentColor ?? colors.brand;
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppSpacing.cardBorderRadius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: AppSpacing.cardBorderRadius,
+            border: Border.all(color: colors.border, width: 1.0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 16, color: color),
+                  const Spacer(),
+                  Text(
+                    count.toString().padLeft(2, "0"),
+                    style: AppTypography.value(colors.text, fontSize: 24),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Backward compatible KpiTile with animation
 class KpiTile extends StatefulWidget {
   final String label;
   final int count;
@@ -34,7 +97,7 @@ class _KpiTileState extends State<KpiTile> with SingleTickerProviderStateMixin {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 300),
     );
     _animation = IntTween(begin: 0, end: widget.count).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
@@ -64,44 +127,43 @@ class _KpiTileState extends State<KpiTile> with SingleTickerProviderStateMixin {
     final colors = context.colors;
     final disableAnimations = MediaQuery.of(context).disableAnimations;
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: colors.border, width: 1.0),
+      ),
       child: InkWell(
         onTap: widget.onTap,
         borderRadius: AppSpacing.cardBorderRadius,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: widget.containerColor,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusChip),
                 ),
-                child: Icon(widget.icon, size: 32, color: widget.accentColor),
+                child: Icon(widget.icon, size: 20, color: widget.accentColor),
               ),
-              const SizedBox(width: 18),
+              const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedBuilder(
-                      animation: _animation,
-                      builder: (context, _) {
-                        final val = disableAnimations ? widget.count : _animation.value;
-                        return Text(
-                          val.toString(),
-                          style: AppTypography.display(widget.accentColor, isNumber: true),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.label,
-                      style: AppTypography.heading(colors.text),
-                    ),
-                  ],
+                child: Text(
+                  widget.label,
+                  style: AppTypography.section(colors.text, fontSize: 15),
                 ),
+              ),
+              AnimatedBuilder(
+                animation: _animation,
+                builder: (context, _) {
+                  final val = disableAnimations ? widget.count : _animation.value;
+                  return Text(
+                    val.toString().padLeft(2, "0"),
+                    style: AppTypography.value(widget.accentColor, fontSize: 24),
+                  );
+                },
               ),
             ],
           ),

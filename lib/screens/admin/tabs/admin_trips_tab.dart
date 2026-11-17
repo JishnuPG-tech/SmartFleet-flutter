@@ -46,36 +46,40 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
         }).toList();
 
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            // SEARCH FIELD (Short & clean placeholder)
-            TextField(
-              decoration: InputDecoration(
-                hintText: l10n.searchTripsHint,
-                hintStyle: AppTypography.body(colors.textSecondary),
-                prefixIcon: Icon(Icons.search_rounded, color: colors.textSecondary, size: 24),
-                filled: true,
-                fillColor: colors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: AppSpacing.buttonBorderRadius,
-                  borderSide: BorderSide(color: colors.border, width: 1.0),
+            // COMPACT SEARCH FIELD
+            SizedBox(
+              height: 44,
+              child: TextField(
+                style: AppTypography.supporting(colors.text, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: l10n.searchTripsHint,
+                  hintStyle: AppTypography.supporting(colors.textSecondary, fontSize: 14),
+                  prefixIcon: Icon(Icons.search_rounded, color: colors.textSecondary, size: 20),
+                  filled: true,
+                  fillColor: colors.surface,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: AppSpacing.buttonBorderRadius,
+                    borderSide: BorderSide(color: colors.border, width: 1.0),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: AppSpacing.buttonBorderRadius,
+                    borderSide: BorderSide(color: colors.border, width: 1.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: AppSpacing.buttonBorderRadius,
+                    borderSide: BorderSide(color: colors.brand, width: 1.5),
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppSpacing.buttonBorderRadius,
-                  borderSide: BorderSide(color: colors.border, width: 1.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: AppSpacing.buttonBorderRadius,
-                  borderSide: BorderSide(color: colors.brand, width: 2.0),
-                ),
+                onChanged: (val) => setState(() => _searchQuery = val),
               ),
-              onChanged: (val) => setState(() => _searchQuery = val),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // HORIZONTALLY SCROLLABLE FILTER CHIPS (Never clipped)
+            // SEGMENTED STATUS FILTERS
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               clipBehavior: Clip.none,
@@ -112,22 +116,24 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
 
             // TRIPS LIST
             if (filteredTrips.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Text(
-                  "No trips match your filter",
-                  style: AppTypography.body(colors.textSecondary),
-                  textAlign: TextAlign.center,
+                child: Center(
+                  child: Text(
+                    "No trips match your filter",
+                    style: AppTypography.supporting(colors.textSecondary),
+                  ),
                 ),
               )
             else
               ...filteredTrips.map((trip) {
                 ChipStatusType statusType;
                 String statusLabel;
+
                 switch (trip.status) {
                   case TripStatus.waiting:
                     statusType = ChipStatusType.waiting;
@@ -145,7 +151,7 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
                 }
 
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: TripCard(
                     id: trip.id,
                     from: trip.from,
@@ -156,7 +162,7 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
                     statusType: statusType,
                     statusLabel: statusLabel,
                     progressPercent: trip.progressPercent,
-                    distanceDoneText: "${trip.distanceDoneKm.toStringAsFixed(1)} of ${trip.distanceKm.toStringAsFixed(0)} km done",
+                    distanceDoneText: "${trip.distanceDoneKm.toStringAsFixed(0)} / ${trip.distanceKm.toStringAsFixed(0)} km",
                     onTap: () {
                       Navigator.push(
                         context,
@@ -184,21 +190,24 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: AppSpacing.chipBorderRadius,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusChip),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? colors.brand : colors.surface,
-          borderRadius: AppSpacing.chipBorderRadius,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusChip),
           border: Border.all(
             color: isSelected ? colors.brand : colors.border,
-            width: 1.5,
+            width: 1.0,
           ),
         ),
         child: Text(
           label,
-          style: AppTypography.label(
+          style: AppTypography.supporting(
             isSelected ? colors.onBrand : colors.text,
+            fontSize: 13,
+          ).copyWith(
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),

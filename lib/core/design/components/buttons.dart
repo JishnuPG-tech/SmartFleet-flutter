@@ -9,6 +9,7 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool isLoading;
+  final double height;
 
   const PrimaryButton({
     super.key,
@@ -16,6 +17,7 @@ class PrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.isLoading = false,
+    this.height = 52.0,
   });
 
   @override
@@ -23,7 +25,7 @@ class PrimaryButton extends StatelessWidget {
     final colors = context.colors;
 
     return SizedBox(
-      height: 56,
+      height: height,
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
@@ -31,6 +33,7 @@ class PrimaryButton extends StatelessWidget {
           foregroundColor: colors.onBrand,
           shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
           elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         onPressed: isLoading || onPressed == null
             ? null
@@ -40,10 +43,10 @@ class PrimaryButton extends StatelessWidget {
               },
         child: isLoading
             ? SizedBox(
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
+                  strokeWidth: 2.2,
                   valueColor: AlwaysStoppedAnimation<Color>(colors.onBrand),
                 ),
               )
@@ -52,13 +55,13 @@ class PrimaryButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 22, color: colors.onBrand),
+                    Icon(icon, size: 20, color: colors.onBrand),
                     const SizedBox(width: 8),
                   ],
                   Flexible(
                     child: Text(
                       label,
-                      style: AppTypography.heading(colors.onBrand),
+                      style: AppTypography.button(colors.onBrand, fontSize: 16),
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -75,12 +78,14 @@ class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
+  final double height;
 
   const SecondaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.icon,
+    this.height = 52.0,
   });
 
   @override
@@ -88,13 +93,16 @@ class SecondaryButton extends StatelessWidget {
     final colors = context.colors;
 
     return SizedBox(
-      height: 56,
+      height: height,
       width: double.infinity,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
+          backgroundColor: colors.surface,
           foregroundColor: colors.text,
-          side: BorderSide(color: colors.border, width: 1.5),
+          side: BorderSide(color: colors.border, width: 1.0),
           shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         onPressed: onPressed == null
             ? null
@@ -107,13 +115,13 @@ class SecondaryButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 22, color: colors.text),
+              Icon(icon, size: 20, color: colors.text),
               const SizedBox(width: 8),
             ],
             Flexible(
               child: Text(
                 label,
-                style: AppTypography.heading(colors.text),
+                style: AppTypography.button(colors.text, fontSize: 16),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -133,6 +141,7 @@ class DangerButton extends StatelessWidget {
   final String confirmActionLabel;
   final VoidCallback onConfirmed;
   final IconData? icon;
+  final double height;
 
   const DangerButton({
     super.key,
@@ -142,6 +151,7 @@ class DangerButton extends StatelessWidget {
     required this.confirmActionLabel,
     required this.onConfirmed,
     this.icon,
+    this.height = 52.0,
   });
 
   void _showConfirmSheet(BuildContext context) {
@@ -149,59 +159,41 @@ class DangerButton extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusCard)),
       ),
       builder: (ctx) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: colors.statusDanger, size: 30),
+                    Icon(Icons.warning_amber_rounded, color: colors.statusDanger, size: 26),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(confirmTitle, style: AppTypography.title(colors.statusDanger)),
+                      child: Text(confirmTitle, style: AppTypography.section(colors.statusDanger, fontSize: 18)),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(confirmMessage, style: AppTypography.body(colors.textSecondary)),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 56,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.statusDanger,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      HapticFeedback.mediumImpact();
-                      onConfirmed();
-                    },
-                    child: Text(confirmActionLabel, style: AppTypography.heading(Colors.white)),
-                  ),
+                const SizedBox(height: 10),
+                Text(confirmMessage, style: AppTypography.supporting(colors.textSecondary)),
+                const SizedBox(height: 20),
+                PrimaryButton(
+                  label: confirmActionLabel,
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    HapticFeedback.mediumImpact();
+                    onConfirmed();
+                  },
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 56,
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.text,
-                      side: BorderSide(color: colors.border, width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
-                    ),
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text("Cancel", style: AppTypography.heading(colors.text)),
-                  ),
+                SecondaryButton(
+                  label: "Cancel",
+                  onPressed: () => Navigator.pop(ctx),
                 ),
               ],
             ),
@@ -216,13 +208,15 @@ class DangerButton extends StatelessWidget {
     final colors = context.colors;
 
     return SizedBox(
-      height: 56,
+      height: height,
       width: double.infinity,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
+          backgroundColor: colors.surface,
           foregroundColor: colors.statusDanger,
-          side: BorderSide(color: colors.statusDanger.withValues(alpha: 0.5), width: 1.5),
+          side: BorderSide(color: colors.statusDanger.withValues(alpha: 0.4), width: 1.0),
           shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         onPressed: () => _showConfirmSheet(context),
         child: Row(
@@ -230,13 +224,13 @@ class DangerButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 22, color: colors.statusDanger),
+              Icon(icon, size: 20, color: colors.statusDanger),
               const SizedBox(width: 8),
             ],
             Flexible(
               child: Text(
                 label,
-                style: AppTypography.heading(colors.statusDanger),
+                style: AppTypography.button(colors.statusDanger, fontSize: 16),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

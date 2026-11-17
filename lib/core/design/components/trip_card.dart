@@ -36,87 +36,82 @@ class TripCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return Hero(
-      tag: "trip_card_$id",
-      child: Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppSpacing.cardBorderRadius,
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Row: Trip ID + Status Chip
-                Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    Text(
-                      id,
-                      style: AppTypography.heading(colors.text, isNumber: true),
-                    ),
-                    StatusChipV2(
-                      label: statusLabel,
-                      icon: statusType == ChipStatusType.success
-                          ? Icons.check_circle_rounded
-                          : statusType == ChipStatusType.running
-                              ? Icons.navigation_rounded
-                              : Icons.hourglass_empty_rounded,
-                      type: statusType,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Route
-                Text(
-                  "$from ➔ $to",
-                  style: AppTypography.heading(colors.text),
-                  maxLines: 2,
-                  overflow: TextOverflow.visible,
-                ),
-                const SizedBox(height: 6),
-
-                // Cargo + Plate
-                Text(
-                  "$cargo · ${weightTons.toStringAsFixed(1)}T · $truckPlate",
-                  style: AppTypography.body(colors.textSecondary),
-                ),
-
-                // Animated Progress Bar if running or delivered
-                if (progressPercent > 0) ...[
-                  const SizedBox(height: 14),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: TweenAnimationBuilder<double>(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOutCubic,
-                      tween: Tween<double>(begin: 0, end: progressPercent.clamp(0.0, 1.0)),
-                      builder: (context, value, _) {
-                        return LinearProgressIndicator(
-                          value: value,
-                          backgroundColor: colors.surfaceAlt,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            statusType == ChipStatusType.success ? colors.statusSuccess : colors.brand,
-                          ),
-                          minHeight: 8,
-                        );
-                      },
-                    ),
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: colors.border, width: 1.0),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppSpacing.cardBorderRadius,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top Row: Trip ID + Status Chip
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    id,
+                    style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
                   ),
-                  if (distanceDoneText.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      distanceDoneText,
-                      style: AppTypography.label(colors.textSecondary, isNumber: true),
+                  StatusChipV2(
+                    label: statusLabel,
+                    icon: statusType == ChipStatusType.success
+                        ? Icons.check_circle_rounded
+                        : statusType == ChipStatusType.running
+                            ? Icons.navigation_rounded
+                            : Icons.hourglass_empty_rounded,
+                    type: statusType,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Route: Compact 16-17sp
+              Text(
+                "$from ➔ $to",
+                style: AppTypography.section(colors.text, fontSize: 16),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+
+              // Cargo + Plate
+              Text(
+                "$cargo · ${weightTons.toStringAsFixed(1)}T · $truckPlate",
+                style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              // Thin Progress Bar
+              if (progressPercent > 0) ...[
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: progressPercent.clamp(0.0, 1.0),
+                    backgroundColor: colors.surfaceAlt,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      statusType == ChipStatusType.success ? colors.statusSuccess : colors.brand,
                     ),
-                  ],
+                    minHeight: 3.5,
+                  ),
+                ),
+                if (distanceDoneText.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    distanceDoneText,
+                    style: AppTypography.supporting(colors.textSecondary, fontSize: 12, isNumber: true),
+                  ),
                 ],
               ],
-            ),
+            ],
           ),
         ),
       ),

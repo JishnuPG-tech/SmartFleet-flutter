@@ -1,28 +1,18 @@
-import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
-import '../../../core/design/tokens/app_colors.dart';
-import '../../../core/design/tokens/app_typography.dart';
-import '../../../core/design/tokens/app_spacing.dart';
-import '../../../core/design/components/status_chip.dart';
-import '../../../core/design/components/kpi_tile.dart';
-import '../../../core/design/components/buttons.dart';
-import '../../../core/data/models/trip.dart';
-import '../../../core/data/models/truck.dart';
-import '../../../core/data/models/driver.dart';
-import '../../../core/data/fleet_repository.dart';
-import '../../../core/maps/smart_fleet_map.dart';
-import '../../../l10n/app_localizations.dart';
-
-String _getGreeting(DateTime now, String morning, String afternoon, String evening) {
-  final hour = now.hour;
-  if (hour >= 5 && hour < 12) {
-    return morning;
-  } else if (hour >= 12 && hour < 17) {
-    return afternoon;
-  } else {
-    return evening;
-  }
-}
+import "package:flutter/material.dart";
+import "package:latlong2/latlong.dart";
+import "../../../core/design/tokens/app_colors.dart";
+import "../../../core/design/tokens/app_typography.dart";
+import "../../../core/design/tokens/app_spacing.dart";
+import "../../../core/design/components/status_chip.dart";
+import "../../../core/design/components/kpi_tile.dart";
+import "../../../core/design/components/buttons.dart";
+import "../../../core/design/components/trip_card.dart";
+import "../../../core/data/models/trip.dart";
+import "../../../core/data/models/truck.dart";
+import "../../../core/data/models/driver.dart";
+import "../../../core/data/fleet_repository.dart";
+import "../../../core/maps/smart_fleet_map.dart";
+import "../../../l10n/app_localizations.dart";
 
 class AdminHomeTab extends StatefulWidget {
   final VoidCallback onNewTrip;
@@ -40,18 +30,13 @@ class AdminHomeTab extends StatefulWidget {
 
 class _AdminHomeTabState extends State<AdminHomeTab> {
   Truck? _selectedTruck;
+  bool _alertsExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
-    final greeting = _getGreeting(
-      now,
-      l10n.greetingMorning,
-      l10n.greetingAfternoon,
-      l10n.greetingEvening,
-    );
 
     return StreamBuilder<List<Trip>>(
       stream: LocalFleetRepository.instance.watchTrips(),
@@ -67,7 +52,6 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                 final drivers = driverSnap.data ?? [];
 
                 final runningCount = trips.where((t) => t.status == TripStatus.running).length;
-                final waitingCount = trips.where((t) => t.status == TripStatus.waiting).length;
                 final deliveredCount = trips.where((t) => t.status == TripStatus.delivered).length;
 
                 final activeTruckPlates = trips
@@ -79,13 +63,9 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                     .where((t) => t.status != TruckStatus.inWorkshop && !activeTruckPlates.contains(t.plate))
                     .length;
 
-                // Needs Attention Rules Derivation:
+                // Derived Alerts
                 final workshopTrucks = trucks.where((t) => t.status == TruckStatus.inWorkshop).toList();
-                
-                // Rule: Driver licence expiring < 30 days
                 final expiringLicenceDrivers = drivers.where((d) => d.isLicenceExpiringSoon).toList();
-
-                // Rule: Truck/driver offline > 10 min during a running trip
                 final offlineRunningTrucks = trucks.where((truck) {
                   final hasRunningTrip = trips.any((t) => t.truckPlate == truck.plate && t.status == TripStatus.running);
                   if (!hasRunningTrip) return false;
@@ -93,7 +73,9 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                   return now.difference(truck.lastSeen!).inMinutes > 10;
                 }).toList();
 
-                // Build markers for all trucks
+                final totalUrgentAlerts = workshopTrucks.length + expiringLicenceDrivers.length + offlineRunningTrucks.length;
+
+                // Markers
                 final markers = trucks.map((truck) {
                   final effectiveStatus = truck.status == TruckStatus.inWorkshop
                       ? TruckStatus.inWorkshop
@@ -113,17 +95,20 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                   );
                 }).toList();
 
+                // Max 3 recent trips
+                final recentTrips = trips.take(3).toList();
+
                 return Stack(
                   children: [
-                    // TOP HERO: Live Fleet Map (~45% of height)
+                    // TOP HERO: Small, useful live fleet map (~35% of height)
                     Positioned(
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: MediaQuery.of(context).size.height * 0.45,
+                      height: MediaQuery.of(context).size.height * 0.34,
                       child: SmartFleetMap(
                         center: const LatLng(10.5276, 76.2144), // Central Kerala (Thrissur)
-                        zoom: 8.2,
+                        zoom: 8.0,
                         markers: markers,
                         onTap: (_, _) {
                           if (_selectedTruck != null) {
@@ -133,304 +118,242 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                       ),
                     ),
 
-                    // SELECTED TRUCK MINI-CARD OVERLAY (When tapped)
+                    // SELECTED TRUCK QUICK OVERLAY
                     if (_selectedTruck != null)
                       Positioned(
-                        top: 16,
-                        left: 16,
-                        right: 16,
+                        top: 12,
+                        left: 12,
+                        right: 12,
                         child: Container(
-                          padding: const EdgeInsets.all(14),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: colors.surface,
                             borderRadius: AppSpacing.cardBorderRadius,
-                            border: Border.all(color: colors.border, width: 1.5),
+                            border: Border.all(color: colors.border, width: 1.0),
                             boxShadow: AppSpacing.lightCardShadow,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+                          child: Row(
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
                                       _selectedTruck!.plate,
-                                      style: AppTypography.heading(colors.text, isNumber: true),
+                                      style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
                                     ),
-                                  ),
-                                  if (_selectedTruck!.status == TruckStatus.inWorkshop)
-                                    StatusChipV2.danger(label: l10n.statusInWorkshop)
-                                  else if (activeTruckPlates.contains(_selectedTruck!.plate))
-                                    StatusChipV2.running(label: l10n.statusRunning)
-                                  else
-                                    StatusChipV2.success(label: l10n.statusAvailable),
-                                  const SizedBox(width: 8),
-                                  IconButton(
-                                    icon: const Icon(Icons.close_rounded),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    onPressed: () => setState(() => _selectedTruck = null),
-                                  ),
-                                ],
+                                    Text(
+                                      _selectedTruck!.model,
+                                      style: AppTypography.supporting(colors.textSecondary, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _selectedTruck!.model,
-                                style: AppTypography.body(colors.textSecondary),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(Icons.person_rounded, size: 18, color: colors.brand),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    drivers.any((d) => d.id == _selectedTruck!.assignedDriverId)
-                                        ? drivers.firstWhere((d) => d.id == _selectedTruck!.assignedDriverId).name
-                                        : "Unassigned",
-                                    style: AppTypography.label(colors.text),
-                                  ),
-                                ],
+                              if (_selectedTruck!.status == TruckStatus.inWorkshop)
+                                StatusChipV2.danger(label: "Service")
+                              else if (activeTruckPlates.contains(_selectedTruck!.plate))
+                                StatusChipV2.running(label: "On trip")
+                              else
+                                StatusChipV2.success(label: "Available"),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () => setState(() => _selectedTruck = null),
                               ),
                             ],
                           ),
                         ),
                       ),
 
-                    // DRAGGABLE BOTTOM SHEET SCAFFOLD
+                    // COMPACT OPERATIONAL CONTENT SHEET
                     DraggableScrollableSheet(
-                      initialChildSize: 0.58,
-                      minChildSize: 0.35,
-                      maxChildSize: 0.95,
+                      initialChildSize: 0.68,
+                      minChildSize: 0.64,
+                      maxChildSize: 0.96,
                       snap: true,
-                      snapSizes: const [0.35, 0.58, 0.95],
+                      snapSizes: const [0.64, 0.68, 0.96],
                       builder: (context, scrollController) {
                         return Container(
                           decoration: BoxDecoration(
                             color: colors.bg,
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                            border: Border(top: BorderSide(color: colors.border, width: 1.5)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                blurRadius: 16,
-                                offset: const Offset(0, -4),
-                              ),
-                            ],
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                            border: Border(top: BorderSide(color: colors.border, width: 1.0)),
                           ),
                           child: ListView(
                             controller: scrollController,
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                             children: [
                               // Drag Handle
                               Center(
                                 child: Container(
-                                  width: 44,
-                                  height: 5,
+                                  width: 36,
+                                  height: 4,
+                                  margin: const EdgeInsets.only(bottom: 12),
                                   decoration: BoxDecoration(
                                     color: colors.border,
-                                    borderRadius: BorderRadius.circular(3),
+                                    borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 14),
 
-                              // GREETING
-                              Text(
-                                greeting,
-                                style: AppTypography.display(colors.text),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.tagline,
-                                style: AppTypography.body(colors.textSecondary),
-                              ),
-
-                              const SizedBox(height: 18),
-
-                              // NEW TRIP BUTTON
+                              // ONE PRIMARY ACTION: Crisp Acid Lime Button
                               PrimaryButton(
                                 label: l10n.btnNewTrip,
                                 icon: Icons.add_rounded,
                                 onPressed: widget.onNewTrip,
+                                height: 50,
                               ),
 
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 14),
 
-                              // 3 BIG METRIC TILES
-                              KpiTile(
-                                label: l10n.runningTrips,
-                                count: runningCount,
-                                icon: Icons.navigation_rounded,
-                                accentColor: colors.brand,
-                                containerColor: colors.statusRunningContainer,
+                              // 3 SUMMARY METRICS: Compact Horizontal Group
+                              Row(
+                                children: [
+                                  CompactMetricTile(
+                                    label: "Active trips",
+                                    count: runningCount,
+                                    icon: Icons.navigation_rounded,
+                                    accentColor: colors.brand,
+                                    onTap: widget.onViewAllTrips,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  CompactMetricTile(
+                                    label: "Available",
+                                    count: availableTrucks,
+                                    icon: Icons.local_shipping_rounded,
+                                    accentColor: colors.statusSuccess,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  CompactMetricTile(
+                                    label: "Delivered",
+                                    count: deliveredCount,
+                                    icon: Icons.check_circle_rounded,
+                                    accentColor: colors.textSecondary,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 12),
 
-                              KpiTile(
-                                label: l10n.freeTrucks,
-                                count: availableTrucks,
-                                icon: Icons.local_shipping_rounded,
-                                accentColor: colors.statusSuccess,
-                                containerColor: colors.statusSuccessContainer,
-                              ),
-                              const SizedBox(height: 12),
-
-                              KpiTile(
-                                label: l10n.deliveredThisMonth,
-                                count: deliveredCount,
-                                icon: Icons.check_circle_rounded,
-                                accentColor: colors.statusSuccess,
-                                containerColor: colors.statusSuccessContainer,
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // NEEDS ATTENTION SECTION (Derived alerts)
-                              if (workshopTrucks.isNotEmpty ||
-                                  waitingCount > 0 ||
-                                  expiringLicenceDrivers.isNotEmpty ||
-                                  offlineRunningTrucks.isNotEmpty) ...[
-                                Row(
-                                  children: [
-                                    Icon(Icons.warning_amber_rounded, color: colors.statusDanger, size: 26),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        l10n.needsAttention,
-                                        style: AppTypography.title(colors.statusDanger),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-
-                                // Alert: Offline during running trip
-                                ...offlineRunningTrucks.map((truck) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: colors.statusDangerContainer,
-                                          borderRadius: AppSpacing.buttonBorderRadius,
-                                          border: Border.all(
-                                              color: colors.statusDanger.withValues(alpha: 0.4), width: 1.5),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.signal_cellular_connected_no_internet_4_bar_rounded,
-                                                color: colors.statusDanger, size: 28),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(truck.plate,
-                                                      style: AppTypography.heading(colors.text, isNumber: true)),
-                                                  Text("GPS offline > 10 min during active transit",
-                                                      style: AppTypography.body(colors.statusDanger)),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )),
-
-                                // Alert: Driver licence expiring soon (< 30 days)
-                                ...expiringLicenceDrivers.map((driver) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: colors.statusWaitingContainer,
-                                          borderRadius: AppSpacing.buttonBorderRadius,
-                                          border: Border.all(
-                                              color: colors.statusWaiting.withValues(alpha: 0.4), width: 1.5),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.badge_rounded, color: colors.statusWaiting, size: 28),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(driver.name, style: AppTypography.heading(colors.text)),
-                                                  Text(
-                                                      "Driving licence expires in ${driver.licenceExpiryDate!.difference(now).inDays} days",
-                                                      style: AppTypography.body(colors.statusWaiting)),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )),
-
-                                // Alert: Trucks in workshop
-                                ...workshopTrucks.map((t) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: colors.statusDangerContainer,
-                                          borderRadius: AppSpacing.buttonBorderRadius,
-                                          border: Border.all(
-                                              color: colors.statusDanger.withValues(alpha: 0.4), width: 1.5),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(Icons.build_rounded, color: colors.statusDanger, size: 28),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(t.plate,
-                                                      style: AppTypography.heading(colors.text, isNumber: true)),
-                                                  Text("${t.model} · ${l10n.statusInWorkshop}",
-                                                      style: AppTypography.body(colors.statusDanger)),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )),
-
-                                // Alert: Waiting trips
-                                if (waitingCount > 0)
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
+                              // URGENT ALERTS (Only when needed, compact banner)
+                              if (totalUrgentAlerts > 0) ...[
+                                const SizedBox(height: 14),
+                                InkWell(
+                                  onTap: () => setState(() => _alertsExpanded = !_alertsExpanded),
+                                  borderRadius: AppSpacing.cardBorderRadius,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                     decoration: BoxDecoration(
                                       color: colors.statusWaitingContainer,
-                                      borderRadius: AppSpacing.buttonBorderRadius,
-                                      border: Border.all(
-                                          color: colors.statusWaiting.withValues(alpha: 0.4), width: 1.5),
+                                      borderRadius: AppSpacing.cardBorderRadius,
+                                      border: Border.all(color: colors.statusWaiting.withValues(alpha: 0.35), width: 1.0),
                                     ),
                                     child: Row(
                                       children: [
-                                        Icon(Icons.hourglass_empty_rounded, color: colors.statusWaiting, size: 28),
-                                        const SizedBox(width: 12),
+                                        Icon(Icons.warning_amber_rounded, size: 18, color: colors.statusWaiting),
+                                        const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            "$waitingCount trip(s) waiting for driver confirmation",
-                                            style: AppTypography.body(colors.statusWaiting),
+                                            "$totalUrgentAlerts urgent operational alert${totalUrgentAlerts > 1 ? 's' : ''}",
+                                            style: AppTypography.supporting(colors.statusWaiting, fontSize: 13).copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
+                                        ),
+                                        Icon(
+                                          _alertsExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                          size: 20,
+                                          color: colors.statusWaiting,
                                         ),
                                       ],
                                     ),
                                   ),
-                                const SizedBox(height: 20),
+                                ),
+                                if (_alertsExpanded) ...[
+                                  const SizedBox(height: 8),
+                                  ...offlineRunningTrucks.map((truck) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      "• ${truck.plate}: GPS offline > 10 min",
+                                      style: AppTypography.supporting(colors.statusDanger, fontSize: 12),
+                                    ),
+                                  )),
+                                  ...expiringLicenceDrivers.map((driver) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      "• ${driver.name}: Licence expires in ${driver.licenceExpiryDate!.difference(now).inDays} days",
+                                      style: AppTypography.supporting(colors.statusWaiting, fontSize: 12),
+                                    ),
+                                  )),
+                                  ...workshopTrucks.map((truck) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      "• ${truck.plate}: In workshop for service",
+                                      style: AppTypography.supporting(colors.statusDanger, fontSize: 12),
+                                    ),
+                                  )),
+                                ],
                               ],
 
-                              // VIEW ALL TRIPS BUTTON
-                              SecondaryButton(
-                                label: l10n.tabTrips,
-                                icon: Icons.receipt_long_rounded,
-                                onPressed: widget.onViewAllTrips,
+                              const SizedBox(height: 18),
+
+                              // RECENT TRIPS SECTION (Max 3)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Recent trips",
+                                    style: AppTypography.section(colors.text, fontSize: 16),
+                                  ),
+                                  GestureDetector(
+                                    onTap: widget.onViewAllTrips,
+                                    child: Text(
+                                      "View all",
+                                      style: AppTypography.supporting(colors.brand, fontSize: 13).copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
+                              const SizedBox(height: 10),
+
+                              if (recentTrips.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 24),
+                                  child: Center(
+                                    child: Text(
+                                      "No active trips",
+                                      style: AppTypography.supporting(colors.textSecondary),
+                                    ),
+                                  ),
+                                )
+                              else
+                                ...recentTrips.map((trip) {
+                                  final chipType = trip.status == TripStatus.delivered
+                                      ? ChipStatusType.success
+                                      : (trip.status == TripStatus.running ? ChipStatusType.running : ChipStatusType.waiting);
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: TripCard(
+                                      id: trip.id,
+                                      from: trip.from,
+                                      to: trip.to,
+                                      cargo: trip.cargo,
+                                      weightTons: trip.weightTons,
+                                      truckPlate: trip.truckPlate,
+                                      statusType: chipType,
+                                      statusLabel: trip.status == TripStatus.delivered
+                                          ? "Done"
+                                          : (trip.status == TripStatus.running ? "Running" : "Waiting"),
+                                      progressPercent: trip.progressPercent,
+                                      distanceDoneText: "${trip.distanceDoneKm.toStringAsFixed(0)} / ${trip.distanceKm.toStringAsFixed(0)} km",
+                                      onTap: widget.onViewAllTrips,
+                                    ),
+                                  );
+                                }),
                             ],
                           ),
                         );

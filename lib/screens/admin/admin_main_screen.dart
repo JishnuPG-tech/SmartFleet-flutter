@@ -55,23 +55,29 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     return Scaffold(
       backgroundColor: colors.bg,
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Strict: no back arrow on root tab
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        automaticallyImplyLeading: false,
+        backgroundColor: colors.surface,
+        titleSpacing: 16,
+        title: Row(
           children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: colors.brand,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
             Text(
               l10n.appTitle,
-              style: AppTypography.title(colors.text),
-            ),
-            Text(
-              l10n.ownerRole,
-              style: AppTypography.label(colors.textSecondary),
+              style: AppTypography.title(colors.text, fontSize: 22),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: colors.text, size: 26),
+            icon: Icon(Icons.settings_outlined, color: colors.textSecondary, size: 22),
             tooltip: l10n.settingsTitle,
             onPressed: () => _openSettings(context),
           ),
@@ -94,27 +100,28 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
         child: NavigationBar(
           selectedIndex: _currentIndex,
           backgroundColor: colors.surface,
-          indicatorColor: colors.brand.withValues(alpha: 0.15),
+          height: 64,
+          indicatorColor: colors.brand.withValues(alpha: 0.16),
           onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
           destinations: [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined, color: colors.textSecondary),
-              selectedIcon: Icon(Icons.home_rounded, color: colors.brand),
+              icon: Icon(Icons.home_outlined, color: colors.textSecondary, size: 22),
+              selectedIcon: Icon(Icons.home_rounded, color: colors.brand, size: 22),
               label: l10n.tabHome,
             ),
             NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined, color: colors.textSecondary),
-              selectedIcon: Icon(Icons.receipt_long_rounded, color: colors.brand),
+              icon: Icon(Icons.receipt_long_outlined, color: colors.textSecondary, size: 22),
+              selectedIcon: Icon(Icons.receipt_long_rounded, color: colors.brand, size: 22),
               label: l10n.tabTrips,
             ),
             NavigationDestination(
-              icon: Icon(Icons.local_shipping_outlined, color: colors.textSecondary),
-              selectedIcon: Icon(Icons.local_shipping_rounded, color: colors.brand),
+              icon: Icon(Icons.local_shipping_outlined, color: colors.textSecondary, size: 22),
+              selectedIcon: Icon(Icons.local_shipping_rounded, color: colors.brand, size: 22),
               label: l10n.tabTrucks,
             ),
             NavigationDestination(
-              icon: Icon(Icons.people_outline_rounded, color: colors.textSecondary),
-              selectedIcon: Icon(Icons.people_rounded, color: colors.brand),
+              icon: Icon(Icons.people_outline_rounded, color: colors.textSecondary, size: 22),
+              selectedIcon: Icon(Icons.people_rounded, color: colors.brand, size: 22),
               label: "Drivers",
             ),
           ],

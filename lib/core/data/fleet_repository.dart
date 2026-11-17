@@ -13,6 +13,7 @@ abstract class FleetRepository {
   Future<Trip?> getTripById(String id);
   Future<Trip?> getCurrentTripForDriver(String driverId);
   Future<void> updateTripStatus(String tripId, TripStatus status);
+  Future<bool> verifyDeliveryOtp(String tripId, String otp);
   Future<void> submitProofOfDelivery(
     String tripId, {
     required String otp,
@@ -175,6 +176,18 @@ class LocalFleetRepository implements FleetRepository {
       await _saveToDisk();
       _notifyAll();
     }
+  }
+
+  @override
+  Future<bool> verifyDeliveryOtp(String tripId, String otp) async {
+    await _init();
+    final index = _trips.indexWhere((t) => t.id == tripId);
+    if (index == -1) return false;
+    final trip = _trips[index];
+    if (trip.podOtp != null && trip.podOtp!.isNotEmpty) {
+      return trip.podOtp == otp.trim();
+    }
+    return otp.trim().length >= 4;
   }
 
   @override

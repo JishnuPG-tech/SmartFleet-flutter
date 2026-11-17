@@ -26,12 +26,13 @@ class AppThemeV2 {
       ),
       extensions: [colors],
       appBarTheme: AppBarTheme(
-        backgroundColor: colors.surface,
+        backgroundColor: colors.bg,
         foregroundColor: colors.text,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: false,
+        titleTextStyle: AppTypography.title(colors.text, fontSize: 24),
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
@@ -52,23 +53,61 @@ class AppThemeV2 {
         style: ElevatedButton.styleFrom(
           backgroundColor: colors.brand,
           foregroundColor: colors.onBrand,
-          minimumSize: const Size.fromHeight(56),
+          minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
             borderRadius: AppSpacing.buttonBorderRadius,
           ),
-          textStyle: AppTypography.heading(colors.onBrand),
+          textStyle: AppTypography.button(colors.onBrand),
           elevation: 0,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: colors.brand,
-          minimumSize: const Size.fromHeight(56),
-          side: BorderSide(color: colors.border, width: 1.5),
+          foregroundColor: colors.text,
+          minimumSize: const Size.fromHeight(52),
+          side: BorderSide(color: colors.border, width: 1.0),
           shape: RoundedRectangleBorder(
             borderRadius: AppSpacing.buttonBorderRadius,
           ),
-          textStyle: AppTypography.heading(colors.brand),
+          textStyle: AppTypography.button(colors.text),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: colors.surface,
+        indicatorColor: isDark ? colors.brand.withValues(alpha: 0.18) : colors.brand.withValues(alpha: 0.12),
+        elevation: 0,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return IconThemeData(color: colors.brand, size: 24);
+          }
+          return IconThemeData(color: colors.textSecondary, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppTypography.supporting(colors.brand).copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            );
+          }
+          return AppTypography.supporting(colors.textSecondary).copyWith(
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+          );
+        }),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: colors.surface,
+        selectedItemColor: colors.brand,
+        unselectedItemColor: colors.textSecondary,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: AppTypography.supporting(colors.brand).copyWith(
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: AppTypography.supporting(colors.textSecondary).copyWith(
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
         ),
       ),
       dividerTheme: DividerThemeData(

@@ -5,8 +5,6 @@ import '../../../core/design/tokens/app_colors.dart';
 import '../../../core/design/tokens/app_typography.dart';
 import '../../../core/design/tokens/app_spacing.dart';
 import '../../../core/design/components/status_chip.dart';
-import '../../../core/design/components/status_headline.dart';
-import '../../../core/design/components/live_badge.dart';
 import '../../../core/design/components/buttons.dart';
 import '../../../core/data/models/driver.dart';
 import '../../../core/data/models/trip.dart';
@@ -30,7 +28,7 @@ class DriverTripTab extends StatelessWidget {
 
   String get effectiveDriverId => driver?.id ?? driverId!;
 
-  void _openGoogleMaps(BuildContext context, String from, String to) async {
+  Future<void> _openGoogleMaps(BuildContext context, String from, String to) async {
     final query = Uri.encodeComponent("$from to $to Kerala");
     final url = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query");
     if (await canLaunchUrl(url)) {
@@ -44,10 +42,17 @@ class DriverTripTab extends StatelessWidget {
     }
   }
 
-  void _callOffice(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Calling fleet office: +91 484 288 9000")),
-    );
+  Future<void> _callOffice(BuildContext context) async {
+    final uri = Uri.parse("tel:+914842889000");
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Calling fleet office: +91 484 288 9000")),
+        );
+      }
+    }
   }
 
   @override
@@ -71,23 +76,24 @@ class DriverTripTab extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: colors.surfaceAlt,
+                      color: colors.surface,
                       shape: BoxShape.circle,
+                      border: Border.all(color: colors.border, width: 1.0),
                     ),
-                    child: Icon(Icons.check_circle_outline_rounded, size: 56, color: colors.statusSuccess),
+                    child: Icon(Icons.check_circle_outline_rounded, size: 48, color: colors.statusSuccess),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Text(
                     l10n.noTripTitle,
-                    style: AppTypography.title(colors.text),
+                    style: AppTypography.title(colors.text, fontSize: 20),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     l10n.noTripSubtitle,
-                    style: AppTypography.body(colors.textSecondary),
+                    style: AppTypography.supporting(colors.textSecondary, fontSize: 14),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -104,138 +110,100 @@ class DriverTripTab extends StatelessWidget {
         final truckPos = MarkerInterpolator.interpolateLatLng(origin, dest, trip.progressPercent);
 
         final arrivalTime = "${trip.estimatedArrival.hour.toString().padLeft(2, '0')}:${trip.estimatedArrival.minute.toString().padLeft(2, '0')}";
+        final kmRemaining = (trip.distanceKm - trip.distanceDoneKm).clamp(0, trip.distanceKm);
 
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            // STATUS HEADLINE
-            StatusHeadline(
-              headline: trip.status == TripStatus.waiting
-                  ? "New Trip Assigned"
-                  : (trip.status == TripStatus.accepted
-                      ? "Ready for Departure"
-                      : "Arriving by $arrivalTime"),
-              subtitle: "Destination: ${trip.to}",
+            // OPERATIONAL HEADLINE
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: AppSpacing.cardBorderRadius,
+                border: Border.all(color: colors.border, width: 1.0),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        trip.id,
+                        style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                      ),
+                      StatusChipV2(
+                        label: trip.status == TripStatus.waiting ? l10n.statusWaiting : l10n.statusRunning,
+                        icon: trip.status == TripStatus.waiting ? Icons.hourglass_empty_rounded : Icons.navigation_rounded,
+                        type: trip.status == TripStatus.waiting ? ChipStatusType.waiting : ChipStatusType.running,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    trip.status == TripStatus.waiting
+                        ? "Assigned: ${trip.to}"
+                        : "Arriving by $arrivalTime · ${kmRemaining.toStringAsFixed(0)} km left",
+                    style: AppTypography.title(colors.text, fontSize: 18),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${trip.from} ➔ ${trip.to}",
+                    style: AppTypography.supporting(colors.textSecondary, fontSize: 14),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
 
-            // LIVE BADGE ROW: Honest about GPS tracking while trip is running
+            const SizedBox(height: 10),
+
+            // LIVE GPS STATUS BAR (Zero overflow, honest telemetry)
             if (isRunning) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: colors.statusSuccessContainer,
-                  borderRadius: AppSpacing.buttonBorderRadius,
-                  border: Border.all(color: colors.statusSuccess.withValues(alpha: 0.3)),
+                  color: colors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusChip),
+                  border: Border.all(color: colors.border, width: 1.0),
                 ),
                 child: Row(
                   children: [
-                    const LiveBadge(
-                      status: LiveStatus.live,
-                      label: "Sharing location: ON",
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: colors.statusSuccess,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "GPS sharing active",
+                        style: AppTypography.supporting(colors.text, fontSize: 13).copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                     Text(
-                      "GPS Live to Fleet Office",
-                      style: AppTypography.label(colors.statusSuccess),
+                      "${trip.distanceDoneKm.toStringAsFixed(0)} / ${trip.distanceKm.toStringAsFixed(0)} km",
+                      style: AppTypography.supporting(colors.textSecondary, fontSize: 12, isNumber: true),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
             ],
 
-            // TRIP CARD
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Text(trip.id, style: AppTypography.heading(colors.text, isNumber: true)),
-                        StatusChipV2(
-                          label: trip.status == TripStatus.waiting ? l10n.statusWaiting : l10n.statusRunning,
-                          icon: trip.status == TripStatus.waiting ? Icons.hourglass_empty_rounded : Icons.navigation_rounded,
-                          type: trip.status == TripStatus.waiting ? ChipStatusType.waiting : ChipStatusType.running,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      children: [
-                        Column(
-                          children: [
-                            Icon(Icons.trip_origin_rounded, size: 22, color: colors.brand),
-                            Container(width: 2, height: 28, color: colors.border),
-                            Icon(Icons.location_on_rounded, size: 22, color: colors.statusDanger),
-                          ],
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(trip.from, style: AppTypography.heading(colors.text)),
-                              const SizedBox(height: 16),
-                              Text(trip.to, style: AppTypography.heading(colors.text)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceAlt,
-                        borderRadius: AppSpacing.buttonBorderRadius,
-                      ),
-                      child: Text(
-                        "${trip.cargo} · ${trip.weightTons} Tons",
-                        style: AppTypography.heading(colors.text),
-                      ),
-                    ),
-
-                    if (isRunning) ...[
-                      const SizedBox(height: 16),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: trip.progressPercent,
-                          backgroundColor: colors.surfaceAlt,
-                          valueColor: AlwaysStoppedAnimation<Color>(colors.brand),
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.kmDoneOfTotal(trip.distanceDoneKm.toStringAsFixed(1), trip.distanceKm.toStringAsFixed(0)),
-                        style: AppTypography.label(colors.textSecondary, isNumber: true),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // COMPACT MAP PREVIEW (Route + own truck position)
+            // COMPACT ROUTE PREVIEW MAP
             ClipRRect(
               borderRadius: AppSpacing.cardBorderRadius,
               child: Container(
-                height: 160,
+                height: 150,
                 decoration: BoxDecoration(
                   borderRadius: AppSpacing.cardBorderRadius,
-                  border: Border.all(color: colors.border, width: 1.5),
+                  border: Border.all(color: colors.border, width: 1.0),
                 ),
                 child: SmartFleetMap(
                   center: truckPos,
@@ -244,7 +212,7 @@ class DriverTripTab extends StatelessWidget {
                   polylines: [
                     Polyline(
                       points: [origin, dest],
-                      strokeWidth: 4.5,
+                      strokeWidth: 3.5,
                       color: colors.brand,
                       strokeCap: StrokeCap.round,
                     ),
@@ -253,7 +221,7 @@ class DriverTripTab extends StatelessWidget {
                     SmartFleetMap.buildPinMarker(
                       position: origin,
                       icon: Icons.trip_origin_rounded,
-                      color: colors.brand,
+                      color: colors.textSecondary,
                       label: trip.from,
                       colors: colors,
                     ),
@@ -275,34 +243,24 @@ class DriverTripTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
 
-            // EXTERNAL NAVIGATION BUTTON (Opens Google Maps or phone navigation app turn-by-turn)
-            SecondaryButton(
-              label: l10n.btnShowRoute,
-              icon: Icons.navigation_rounded,
-              onPressed: () => _openGoogleMaps(context, trip.from, trip.to),
-            ),
             const SizedBox(height: 14),
 
-            // PRIMARY ACTION IN THUMB ZONE
+            // ONE OBVIOUS PRIMARY ACTION (56dp Thumb Target)
             if (trip.status == TripStatus.waiting) ...[
               PrimaryButton(
                 label: l10n.btnAcceptTrip,
                 icon: Icons.check_circle_outline_rounded,
+                height: 56,
                 onPressed: () async {
                   await LocalFleetRepository.instance.updateTripStatus(trip.id, TripStatus.accepted);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Trip accepted! Ready for dispatch.")),
-                    );
-                  }
                 },
               ),
             ] else if (trip.status == TripStatus.accepted) ...[
               PrimaryButton(
                 label: l10n.btnStartTrip,
                 icon: Icons.play_arrow_rounded,
+                height: 56,
                 onPressed: () async {
                   await LocalFleetRepository.instance.updateTripStatus(trip.id, TripStatus.running);
                 },
@@ -311,6 +269,7 @@ class DriverTripTab extends StatelessWidget {
               PrimaryButton(
                 label: l10n.btnReached,
                 icon: Icons.flag_rounded,
+                height: 56,
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -322,26 +281,46 @@ class DriverTripTab extends StatelessWidget {
               ),
             ],
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
 
-            SecondaryButton(
-              label: l10n.btnCallOffice,
-              icon: Icons.phone_rounded,
-              onPressed: () => _callOffice(context),
+            // SECONDARY ACTIONS: Route navigation & office call
+            Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(
+                    label: "Navigation",
+                    icon: Icons.navigation_rounded,
+                    height: 48,
+                    onPressed: () => _openGoogleMaps(context, trip.from, trip.to),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SecondaryButton(
+                    label: "Call office",
+                    icon: Icons.phone_rounded,
+                    height: 48,
+                    onPressed: () => _callOffice(context),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 14),
 
+            const SizedBox(height: 10),
+
+            // BREAKDOWN / EMERGENCY ASSISTANCE
             DangerButton(
               label: l10n.btnHelpBreakdown,
               icon: Icons.warning_amber_rounded,
+              height: 48,
               confirmTitle: l10n.confirmBreakdownTitle,
               confirmMessage: l10n.confirmBreakdownMessage,
               confirmActionLabel: l10n.btnConfirm,
               onConfirmed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Breakdown alert sent to fleet office."),
-                    backgroundColor: Color(0xFFC62828),
+                  SnackBar(
+                    content: const Text("Breakdown alert sent to fleet office."),
+                    backgroundColor: colors.statusDanger,
                   ),
                 );
               },

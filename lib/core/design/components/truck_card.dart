@@ -37,48 +37,46 @@ class TruckCard extends StatelessWidget {
         chip = StatusChipV2.running(label: "On trip");
         break;
       case TruckStatusType.inWorkshop:
-        chip = StatusChipV2.danger(label: "In workshop");
+        chip = StatusChipV2.danger(label: "Service");
         break;
     }
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: colors.border, width: 1.0),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: AppSpacing.cardBorderRadius,
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Plate + Status Chip
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     plate,
-                    style: AppTypography.heading(colors.text, isNumber: true),
+                    style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
                   ),
                   chip,
                 ],
               ),
-              const SizedBox(height: 12),
-
-              // Model & Capacity
+              const SizedBox(height: 6),
               Text(
-                "$model · ${capacityTons.toStringAsFixed(0)}T Capacity",
-                style: AppTypography.heading(colors.text),
+                "$model · ${capacityTons.toStringAsFixed(0)}T",
+                style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 6),
-
-              // Driver Name
               Row(
                 children: [
                   Icon(
                     Icons.person_outline_rounded,
-                    size: 20,
+                    size: 16,
                     color: driverName != null ? colors.brand : colors.textSecondary,
                   ),
                   const SizedBox(width: 6),
@@ -86,9 +84,10 @@ class TruckCard extends StatelessWidget {
                     child: Text(
                       driverName != null && driverName!.isNotEmpty
                           ? "Driver: $driverName"
-                          : "No driver currently assigned",
-                      style: AppTypography.body(
+                          : "Unassigned",
+                      style: AppTypography.supporting(
                         driverName != null ? colors.text : colors.textSecondary,
+                        fontSize: 13,
                       ),
                     ),
                   ),

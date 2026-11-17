@@ -27,104 +27,76 @@ class DriverCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppSpacing.cardBorderRadius,
+        border: Border.all(color: colors.border, width: 1.0),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colors.brand.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.person_rounded, size: 28, color: colors.brand),
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: colors.surfaceAlt,
+                  child: Icon(Icons.person_rounded, size: 20, color: colors.brand),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         name,
-                        style: AppTypography.heading(colors.text),
+                        style: AppTypography.section(colors.text, fontSize: 16),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "$phone · $experienceYears yrs exp",
-                        style: AppTypography.body(colors.textSecondary),
+                        phone,
+                        style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.phone_rounded, color: colors.brand, size: 22),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colors.surfaceAlt,
+                    padding: const EdgeInsets.all(10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusChip)),
+                  ),
+                  onPressed: onCall,
+                  tooltip: "Call Driver",
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-
+            const SizedBox(height: 10),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: colors.surfaceAlt,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusChip),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
+                  Icon(Icons.local_shipping_outlined, size: 16, color: colors.textSecondary),
+                  const SizedBox(width: 6),
                   Text(
-                    "Truck: $assignedTruckPlate",
-                    style: AppTypography.label(colors.text),
+                    assignedTruckPlate.isNotEmpty ? assignedTruckPlate : "Unassigned",
+                    style: AppTypography.supporting(colors.text, fontSize: 12, isNumber: true),
                   ),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      Text(
-                        "Licence: $licenceNumber",
-                        style: AppTypography.label(
-                          isLicencePlaceholder ? colors.statusWaiting : colors.textSecondary,
-                        ),
-                      ),
-                      if (isLicencePlaceholder)
-                        Icon(Icons.warning_amber_rounded, size: 16, color: colors.statusWaiting),
-                    ],
+                  const Spacer(),
+                  Text(
+                    "$experienceYears yrs exp",
+                    style: AppTypography.supporting(colors.textSecondary, fontSize: 12),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            SizedBox(
-              height: 52,
-              width: double.infinity,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.brand,
-                  side: BorderSide(color: colors.brand.withValues(alpha: 0.5), width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
-                ),
-                onPressed: onCall,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.phone_rounded, size: 20),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        "Call Driver",
-                        style: AppTypography.heading(colors.brand),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ],
