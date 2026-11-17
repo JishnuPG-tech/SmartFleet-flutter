@@ -1,142 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/components/lucide_compat.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/models/fleet_models.dart';
-import '../../../core/state/fleet_state.dart';
-import '../../../core/components/status_badge.dart';
-import '../../driver/live_tracking_screen.dart';
+import 'package:smartfleet_flutter/core/components/status_chip.dart';
+import 'package:smartfleet_flutter/core/data/models/truck.dart';
+import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
+import 'package:smartfleet_flutter/core/theme/app_theme.dart';
+import 'package:smartfleet_flutter/l10n/app_localizations.dart';
 
 class AdminFleetTab extends StatelessWidget {
   const AdminFleetTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: FleetState.instance,
-      builder: (context, _) {
-        final vehicles = FleetState.instance.vehicles;
+    final l10n = AppLocalizations.of(context);
 
-        return Scaffold(
-          backgroundColor: AppColors.midnightBlack,
-          appBar: AppBar(
-            backgroundColor: AppColors.midnightBlack,
-            elevation: 0,
-            title: const Text(
-              'Fleet Lorries',
-              style: TextStyle(
-                color: AppColors.pureWhite,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          body: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemCount: vehicles.length,
-            itemBuilder: (context, index) {
-              final v = vehicles[index];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.cardCharcoal,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.hairline),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(10),
+    return StreamBuilder<List<Truck>>(
+      stream: LocalFleetRepository.instance.watchTrucks(),
+      builder: (context, snapshot) {
+        final trucks = snapshot.data ?? [];
+
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          itemCount: trucks.length,
+          itemBuilder: (context, index) {
+            final truck = trucks[index];
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Plate + Status Chip
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          Text(
+                            truck.plate,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
-                          child: const Icon(LucideIcons.truck, size: 18, color: AppColors.accent),
+                          StatusChip.forTruck(context, truck.status),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Model & Capacity
+                      Text(
+                        '${truck.model} · ${truck.capacityTons}T ${l10n.truckCapacity}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                v.plateNumber,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColors.pureWhite,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              Text(
-                                v.model,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColors.mutedGray,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        StatusBadge(
-                          label: v.status == VehicleStatus.onTrip
-                              ? 'On Trip'
-                              : v.status == VehicleStatus.available
-                                  ? 'Available'
-                                  : 'Maintenance',
-                          color: v.status == VehicleStatus.onTrip
-                              ? AppColors.accent
-                              : v.status == VehicleStatus.available
-                                  ? AppColors.green
-                                  : AppColors.orange,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Pilot: ${v.assignedDriver}', style: const TextStyle(color: AppColors.mutedGray, fontSize: 11)),
-                        Text('Cap: ${v.capacity}', style: const TextStyle(color: AppColors.mutedGray, fontSize: 11)),
-                        Text('Diesel: ${(v.fuelLevel * 100).toInt()}%', style: const TextStyle(color: AppColors.pureWhite, fontSize: 11, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                    if (v.status == VehicleStatus.onTrip) ...[
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 36,
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.hairline),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          onPressed: () {
-                            final activeTrip = FleetState.instance.trips.first;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => LiveTrackingScreen(trip: activeTrip)),
-                            );
-                          },
-                          icon: const Icon(LucideIcons.navigation, size: 14, color: AppColors.accent),
-                          label: const Text(
-                            'LIVE GPS TELEMETRY',
-                            style: TextStyle(color: AppColors.pureWhite, fontSize: 11, fontWeight: FontWeight.w800),
-                          ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      // Assigned driver
+                      Text(
+                        truck.assignedDriverId.isNotEmpty
+                            ? 'Assigned Driver ID: ${truck.assignedDriverId}'
+                            : 'No driver currently assigned',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );
