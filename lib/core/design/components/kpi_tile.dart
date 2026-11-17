@@ -43,10 +43,18 @@ class CompactMetricTile extends StatelessWidget {
               Row(
                 children: [
                   Icon(icon, size: 16, color: color),
-                  const Spacer(),
-                  Text(
-                    count.toString().padLeft(2, "0"),
-                    style: AppTypography.value(colors.text, fontSize: 24),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          count.toString().padLeft(2, "0"),
+                          style: AppTypography.value(colors.text, fontSize: 24),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

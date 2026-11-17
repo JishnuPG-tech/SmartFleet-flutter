@@ -115,19 +115,24 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                    size: 20,
-                    color: colors.brand,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    isDark ? "Midnight Black" : "Pure White",
-                    style: AppTypography.section(colors.text, fontSize: 15),
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                      size: 20,
+                      color: colors.brand,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        isDark ? "Midnight Black" : "Pure White",
+                        style: AppTypography.section(colors.text, fontSize: 15),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Switch(
                 value: isDark,
@@ -179,7 +184,14 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTypography.supporting(colors.textSecondary, fontSize: 13)),
+        Expanded(
+          child: Text(
+            label,
+            style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 8),
         Text(value, style: AppTypography.section(colors.text, fontSize: 14, isNumber: true)),
       ],
     );

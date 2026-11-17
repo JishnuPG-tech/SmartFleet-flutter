@@ -129,14 +129,20 @@ class DriverTripTab extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        trip.id,
-                        style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                      Expanded(
+                        child: Text(
+                          trip.id,
+                          style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      StatusChipV2(
-                        label: trip.status == TripStatus.waiting ? l10n.statusWaiting : l10n.statusRunning,
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: StatusChipV2(
+                          label: trip.status == TripStatus.waiting ? l10n.statusWaiting : l10n.statusRunning,
                         icon: trip.status == TripStatus.waiting ? Icons.hourglass_empty_rounded : Icons.navigation_rounded,
                         type: trip.status == TripStatus.waiting ? ChipStatusType.waiting : ChipStatusType.running,
+                        ),
                       ),
                     ],
                   ),

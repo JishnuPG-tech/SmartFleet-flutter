@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'api_client.dart';
 import 'models/driver.dart';
 import 'models/truck.dart';
 import 'models/trip.dart';
@@ -52,13 +53,15 @@ class LocalFleetRepository implements FleetRepository {
   }
 
   // Factory constructor for unit testing with custom persistence directory
-  factory LocalFleetRepository.forTesting({Directory? testDir}) {
+  factory LocalFleetRepository.forTesting({Directory? testDir, ApiClient? apiClient}) {
     final repo = LocalFleetRepository._();
     if (testDir != null) repo._storageDir = testDir;
+    if (apiClient != null) repo._apiClient = apiClient;
     return repo;
   }
 
   Directory? _storageDir;
+  ApiClient _apiClient = ApiClient();
   final List<Trip> _trips = [];
   final List<Driver> _drivers = [];
   final List<Truck> _trucks = [];
@@ -80,6 +83,33 @@ class LocalFleetRepository implements FleetRepository {
     await _loadFromDisk();
     _isInitialized = true;
     _notifyAll();
+
+    // Asynchronously synchronize with live FastAPI backend
+    unawaited(_syncFromRemote());
+  }
+
+  Future<void> _syncFromRemote() async {
+    try {
+      final remoteTrips = await _apiClient.getTrips();
+      if (remoteTrips.isNotEmpty) {
+        _trips.clear();
+        _trips.addAll(remoteTrips);
+        await _saveToDisk();
+      }
+      final remoteTrucks = await _apiClient.getTrucks();
+      if (remoteTrucks.isNotEmpty) {
+        _trucks.clear();
+        _trucks.addAll(remoteTrucks);
+      }
+      final remoteDrivers = await _apiClient.getDrivers();
+      if (remoteDrivers.isNotEmpty) {
+        _drivers.clear();
+        _drivers.addAll(remoteDrivers);
+      }
+      _notifyAll();
+    } catch (_) {
+      // Offline fallback
+    }
   }
 
   File? _getStorageFile() {
@@ -126,10 +156,9 @@ class LocalFleetRepository implements FleetRepository {
   }
 
   @override
-  Stream<List<Trip>> watchTrips() async* {
-    await _init();
-    yield List.unmodifiable(_trips);
-    yield* _tripsController.stream;
+  Stream<List<Trip>> watchTrips() {
+    _init();
+    return _tripsController.stream;
   }
 
   @override
@@ -175,12 +204,22 @@ class LocalFleetRepository implements FleetRepository {
       _trips[index] = old.copyWith(status: status, distanceDoneKm: done);
       await _saveToDisk();
       _notifyAll();
+
+      // Dispatch update to live backend asynchronously
+      unawaited(_apiClient.updateTripStatus(tripId, status));
     }
   }
 
   @override
   Future<bool> verifyDeliveryOtp(String tripId, String otp) async {
     await _init();
+    // 1. Check live backend first
+    try {
+      final remoteVerified = await _apiClient.verifyDeliveryOtp(tripId, otp);
+      if (remoteVerified) return true;
+    } catch (_) {}
+
+    // 2. Fallback to local check
     final index = _trips.indexWhere((t) => t.id == tripId);
     if (index == -1) return false;
     final trip = _trips[index];
@@ -210,6 +249,14 @@ class LocalFleetRepository implements FleetRepository {
       );
       await _saveToDisk();
       _notifyAll();
+
+      // Dispatch to live backend
+      unawaited(_apiClient.submitProofOfDelivery(
+        tripId,
+        otp: otp,
+        photoPath: photoPath,
+        signatureSvg: signatureSvg,
+      ));
     }
   }
 
@@ -222,7 +269,11 @@ class LocalFleetRepository implements FleetRepository {
     required String driverId,
   }) async {
     await _init();
-    int maxId = 1028;
+    final driver = _drivers.firstWhere((d) => d.id == driverId, orElse: () => _drivers.first);
+    final truckPlate = driver.assignedTruckPlate.isNotEmpty ? driver.assignedTruckPlate : _trucks.first.plate;
+
+    // Generate next TR-#### ID
+    int maxId = 1025;
     for (final t in _trips) {
       if (t.id.startsWith('TR-')) {
         final numPart = int.tryParse(t.id.substring(3));
@@ -231,40 +282,44 @@ class LocalFleetRepository implements FleetRepository {
         }
       }
     }
-    final newId = 'TR-${maxId + 1}';
-
-    final driver = _drivers.firstWhere((d) => d.id == driverId);
-
-    const double standardDistance = 160.0;
-    const int standardAllowance = 4500;
+    final nextId = 'TR-${maxId + 1}';
 
     final newTrip = Trip(
-      id: newId,
+      id: nextId,
       from: from,
       to: to,
       cargo: cargo,
       weightTons: weightTons,
-      truckPlate: driver.assignedTruckPlate,
+      truckPlate: truckPlate,
       driverId: driverId,
       status: TripStatus.waiting,
       startedAt: DateTime.now(),
-      distanceKm: standardDistance,
+      distanceKm: 160.0,
       distanceDoneKm: 0.0,
-      allowanceAmount: standardAllowance,
+      allowanceAmount: 1500,
       isPaid: false,
     );
 
     _trips.insert(0, newTrip);
     await _saveToDisk();
     _notifyAll();
+
+    // Post to live backend asynchronously
+    unawaited(_apiClient.createTrip(
+      from: from,
+      to: to,
+      cargo: cargo,
+      weightTons: weightTons,
+      driverId: driverId,
+    ));
+
     return newTrip;
   }
 
   @override
-  Stream<List<Driver>> watchDrivers() async* {
-    await _init();
-    yield List.unmodifiable(_drivers);
-    yield* _driversController.stream;
+  Stream<List<Driver>> watchDrivers() {
+    _init();
+    return _driversController.stream;
   }
 
   @override
@@ -284,10 +339,9 @@ class LocalFleetRepository implements FleetRepository {
   }
 
   @override
-  Stream<List<Truck>> watchTrucks() async* {
-    await _init();
-    yield List.unmodifiable(_trucks);
-    yield* _trucksController.stream;
+  Stream<List<Truck>> watchTrucks() {
+    _init();
+    return _trucksController.stream;
   }
 
   @override
@@ -321,11 +375,7 @@ class LocalFleetRepository implements FleetRepository {
   @override
   Future<int> getFreeTrucksCount() async {
     await _init();
-    final activeTruckPlates = _trips
-        .where((t) => t.status != TripStatus.delivered)
-        .map((t) => t.truckPlate)
-        .toSet();
-    return _trucks.where((t) => t.status != TruckStatus.inWorkshop && !activeTruckPlates.contains(t.plate)).length;
+    return _trucks.where((t) => t.status == TruckStatus.available).length;
   }
 
   @override
@@ -337,17 +387,12 @@ class LocalFleetRepository implements FleetRepository {
   @override
   Future<List<String>> getNeedsAttentionList() async {
     await _init();
-    final list = <String>[];
+    final alerts = <String>[];
     for (final truck in _trucks) {
       if (truck.status == TruckStatus.inWorkshop) {
-        list.add('${truck.plate} (${truck.model}) is currently in workshop for service.');
+        alerts.add('${truck.plate} is currently in workshop');
       }
     }
-    for (final trip in _trips) {
-      if (trip.status == TripStatus.waiting) {
-        list.add('Trip ${trip.id} (${trip.from} to ${trip.to}) is waiting for driver confirmation.');
-      }
-    }
-    return list;
+    return alerts;
   }
 }

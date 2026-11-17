@@ -156,14 +156,20 @@ class DriverEarningsTab extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                trip.id,
-                                style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                              Expanded(
+                                child: Text(
+                                  trip.id,
+                                  style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              StatusChipV2(
-                                label: isPaid ? l10n.statusPaid : l10n.statusPending,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: StatusChipV2(
+                                  label: isPaid ? l10n.statusPaid : l10n.statusPending,
                                 icon: isPaid ? Icons.check_circle_rounded : Icons.hourglass_empty_rounded,
                                 type: isPaid ? ChipStatusType.success : ChipStatusType.waiting,
+                                ),
                               ),
                             ],
                           ),
@@ -178,10 +184,14 @@ class DriverEarningsTab extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "${trip.cargo} · ${trip.weightTons}T",
-                                style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
+                              Expanded(
+                                child: Text(
+                                  "${trip.cargo} · ${trip.weightTons}T",
+                                  style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 CurrencyFormatter.format(trip.allowanceAmount),
                                 style: AppTypography.section(colors.brand, fontSize: 15, isNumber: true),

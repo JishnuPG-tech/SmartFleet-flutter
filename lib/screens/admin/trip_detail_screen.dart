@@ -194,10 +194,13 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      LiveBadge(
-                        status: trip.status == TripStatus.running ? LiveStatus.live : LiveStatus.offline,
-                        label: trip.status == TripStatus.running ? "Live GPS · Updated 12s ago" : "Stationary",
+                      Flexible(
+                        child: LiveBadge(
+                          status: trip.status == TripStatus.running ? LiveStatus.live : LiveStatus.offline,
+                          label: trip.status == TripStatus.running ? "Live GPS · Updated 12s ago" : "Stationary",
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       StatusChipV2(label: statusLabel, icon: Icons.local_shipping_rounded, type: statusType),
                     ],
                   ),

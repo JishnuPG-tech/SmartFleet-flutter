@@ -302,10 +302,14 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "Recent trips",
-                                    style: AppTypography.section(colors.text, fontSize: 16),
+                                  Expanded(
+                                    child: Text(
+                                      "Recent trips",
+                                      style: AppTypography.section(colors.text, fontSize: 16),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   GestureDetector(
                                     onTap: widget.onViewAllTrips,
                                     child: Text(

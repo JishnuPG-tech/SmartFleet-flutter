@@ -116,8 +116,8 @@ class SmartFleetMap extends StatelessWidget {
 
     return Marker(
       point: position,
-      width: 54,
-      height: 54,
+      width: 64,
+      height: 64,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -182,7 +182,7 @@ class SmartFleetMap extends StatelessWidget {
     return Marker(
       point: position,
       width: 64,
-      height: 52,
+      height: 60,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

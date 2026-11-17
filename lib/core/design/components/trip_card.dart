@@ -55,18 +55,24 @@ class TripCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    id,
-                    style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                  Expanded(
+                    child: Text(
+                      id,
+                      style: AppTypography.section(colors.text, fontSize: 15, isNumber: true),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  StatusChipV2(
-                    label: statusLabel,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: StatusChipV2(
+                      label: statusLabel,
                     icon: statusType == ChipStatusType.success
                         ? Icons.check_circle_rounded
                         : statusType == ChipStatusType.running
                             ? Icons.navigation_rounded
                             : Icons.hourglass_empty_rounded,
                     type: statusType,
+                    ),
                   ),
                 ],
               ),

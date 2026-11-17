@@ -228,8 +228,8 @@ class _DeliveryProofFlowState extends State<DeliveryProofFlow> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 24,
-          height: 24,
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
             color: isDone ? colors.brand : colors.surfaceAlt,
             shape: BoxShape.circle,
@@ -237,16 +237,16 @@ class _DeliveryProofFlowState extends State<DeliveryProofFlow> {
           child: Center(
             child: Text(
               step.toString(),
-              style: AppTypography.supporting(isDone ? colors.onBrand : colors.textSecondary, fontSize: 12).copyWith(
+              style: AppTypography.supporting(isDone ? colors.onBrand : colors.textSecondary, fontSize: 11).copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 4),
         Text(
           label,
-          style: AppTypography.supporting(isDone ? colors.text : colors.textSecondary, fontSize: 12).copyWith(
+          style: AppTypography.supporting(isDone ? colors.text : colors.textSecondary, fontSize: 11).copyWith(
             fontWeight: isDone ? FontWeight.w600 : FontWeight.w400,
           ),
         ),

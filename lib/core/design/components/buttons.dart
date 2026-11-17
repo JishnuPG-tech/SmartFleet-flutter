@@ -52,7 +52,7 @@ class PrimaryButton extends StatelessWidget {
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   if (icon != null) ...[
                     Icon(icon, size: 20, color: colors.onBrand),
@@ -112,7 +112,7 @@ class SecondaryButton extends StatelessWidget {
               },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             if (icon != null) ...[
               Icon(icon, size: 20, color: colors.text),
@@ -221,7 +221,7 @@ class DangerButton extends StatelessWidget {
         onPressed: () => _showConfirmSheet(context),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             if (icon != null) ...[
               Icon(icon, size: 20, color: colors.statusDanger),

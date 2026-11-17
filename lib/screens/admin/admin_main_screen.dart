@@ -69,9 +69,12 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              l10n.appTitle,
-              style: AppTypography.title(colors.text, fontSize: 22),
+            Expanded(
+              child: Text(
+                l10n.appTitle,
+                style: AppTypography.title(colors.text, fontSize: 22),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),

@@ -60,11 +60,14 @@ class _AdminFleetTabState extends State<AdminFleetTab> {
                       ),
                       child: Row(
                         children: [
-                          Text(
-                            "${trucks.length} Trucks",
-                            style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
+                          Expanded(
+                            child: Text(
+                              "${trucks.length} Trucks",
+                              style: AppTypography.section(colors.text, fontSize: 16, isNumber: true),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          const Spacer(),
+                          const SizedBox(width: 8),
                           SegmentedButton<bool>(
                             segments: const [
                               ButtonSegment<bool>(
