@@ -1,17 +1,22 @@
-import "package:flutter/material.dart";
-import "package:url_launcher/url_launcher.dart";
-import "../../../core/design/tokens/app_colors.dart";
-import "../../../core/design/tokens/app_typography.dart";
-import "../../../core/design/tokens/app_spacing.dart";
-import "../../../core/design/components/status_chip.dart";
-import "../../../core/design/components/status_headline.dart";
-import "../../../core/design/components/live_badge.dart";
-import "../../../core/design/components/buttons.dart";
-import "../../../core/data/models/driver.dart";
-import "../../../core/data/models/trip.dart";
-import "../../../core/data/fleet_repository.dart";
-import "../../../l10n/app_localizations.dart";
-import "../delivery_proof_flow.dart";
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/design/tokens/app_colors.dart';
+import '../../../core/design/tokens/app_typography.dart';
+import '../../../core/design/tokens/app_spacing.dart';
+import '../../../core/design/components/status_chip.dart';
+import '../../../core/design/components/status_headline.dart';
+import '../../../core/design/components/live_badge.dart';
+import '../../../core/design/components/buttons.dart';
+import '../../../core/data/models/driver.dart';
+import '../../../core/data/models/trip.dart';
+import '../../../core/data/models/truck.dart';
+import '../../../core/data/fleet_repository.dart';
+import '../../../core/maps/smart_fleet_map.dart';
+import '../../../core/maps/kerala_locations.dart';
+import '../../../core/maps/marker_interpolator.dart';
+import '../../../l10n/app_localizations.dart';
+import '../delivery_proof_flow.dart';
 
 class DriverTripTab extends StatelessWidget {
   final Driver? driver;
@@ -33,7 +38,7 @@ class DriverTripTab extends StatelessWidget {
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open Google Maps")),
+          const SnackBar(content: Text("Could not open navigation app")),
         );
       }
     }
@@ -94,29 +99,51 @@ class DriverTripTab extends StatelessWidget {
         final trip = activeTrip;
         final isRunning = trip.status == TripStatus.running || trip.status == TripStatus.accepted;
 
+        final origin = KeralaLocations.resolve(trip.from);
+        final dest = KeralaLocations.resolve(trip.to);
+        final truckPos = MarkerInterpolator.interpolateLatLng(origin, dest, trip.progressPercent);
+
+        final arrivalTime = "${trip.estimatedArrival.hour.toString().padLeft(2, '0')}:${trip.estimatedArrival.minute.toString().padLeft(2, '0')}";
+
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: StatusHeadline(
-                    headline: trip.status == TripStatus.waiting
-                        ? "New Trip Assigned"
-                        : "Arriving by 4:30 PM",
-                    subtitle: "To ${trip.to}",
-                  ),
-                ),
-                if (isRunning)
-                  const LiveBadge(
-                    status: LiveStatus.live,
-                    label: "Sharing ON",
-                  ),
-              ],
+            // STATUS HEADLINE
+            StatusHeadline(
+              headline: trip.status == TripStatus.waiting
+                  ? "New Trip Assigned"
+                  : (trip.status == TripStatus.accepted
+                      ? "Ready for Departure"
+                      : "Arriving by $arrivalTime"),
+              subtitle: "Destination: ${trip.to}",
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // LIVE BADGE ROW: Honest about GPS tracking while trip is running
+            if (isRunning) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: colors.statusSuccessContainer,
+                  borderRadius: AppSpacing.buttonBorderRadius,
+                  border: Border.all(color: colors.statusSuccess.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const LiveBadge(
+                      status: LiveStatus.live,
+                      label: "Sharing location: ON",
+                    ),
+                    const Spacer(),
+                    Text(
+                      "GPS Live to Fleet Office",
+                      style: AppTypography.label(colors.statusSuccess),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
 
             // TRIP CARD
             Card(
@@ -199,15 +226,66 @@ class DriverTripTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
+            // COMPACT MAP PREVIEW (Route + own truck position)
+            ClipRRect(
+              borderRadius: AppSpacing.cardBorderRadius,
+              child: Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  borderRadius: AppSpacing.cardBorderRadius,
+                  border: Border.all(color: colors.border, width: 1.5),
+                ),
+                child: SmartFleetMap(
+                  center: truckPos,
+                  zoom: 9.5,
+                  interactive: false,
+                  polylines: [
+                    Polyline(
+                      points: [origin, dest],
+                      strokeWidth: 4.5,
+                      color: colors.brand,
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ],
+                  markers: [
+                    SmartFleetMap.buildPinMarker(
+                      position: origin,
+                      icon: Icons.trip_origin_rounded,
+                      color: colors.brand,
+                      label: trip.from,
+                      colors: colors,
+                    ),
+                    SmartFleetMap.buildPinMarker(
+                      position: dest,
+                      icon: Icons.flag_rounded,
+                      color: colors.statusSuccess,
+                      label: trip.to,
+                      colors: colors,
+                    ),
+                    SmartFleetMap.buildTruckMarker(
+                      position: truckPos,
+                      plateNumber: trip.truckPlate,
+                      status: TruckStatus.onTrip,
+                      colors: colors,
+                      heading: 335.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // EXTERNAL NAVIGATION BUTTON (Opens Google Maps or phone navigation app turn-by-turn)
             SecondaryButton(
               label: l10n.btnShowRoute,
-              icon: Icons.map_outlined,
+              icon: Icons.navigation_rounded,
               onPressed: () => _openGoogleMaps(context, trip.from, trip.to),
             ),
             const SizedBox(height: 14),
 
+            // PRIMARY ACTION IN THUMB ZONE
             if (trip.status == TripStatus.waiting) ...[
               PrimaryButton(
                 label: l10n.btnAcceptTrip,

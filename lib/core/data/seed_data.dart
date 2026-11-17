@@ -15,7 +15,7 @@ class SeedData {
     'Trivandrum Bay',
   ];
 
-  static const List<Driver> drivers = [
+  static final List<Driver> drivers = [
     Driver(
       id: 'd1',
       name: 'Suresh Kumar',
@@ -24,6 +24,7 @@ class SeedData {
       isLicencePlaceholder: false,
       experienceYears: 12,
       assignedTruckPlate: 'KL 11 AB 1234',
+      licenceExpiryDate: DateTime(2027, 10, 15),
     ),
     Driver(
       id: 'd2',
@@ -33,6 +34,7 @@ class SeedData {
       isLicencePlaceholder: false,
       experienceYears: 8,
       assignedTruckPlate: 'KL 07 CD 5678',
+      licenceExpiryDate: DateTime(2026, 11, 28), // Expiring in 11 days (< 30 days rule)
     ),
     Driver(
       id: 'd3',
@@ -42,25 +44,31 @@ class SeedData {
       isLicencePlaceholder: false,
       experienceYears: 15,
       assignedTruckPlate: 'KL 09 EF 9012',
+      licenceExpiryDate: DateTime(2028, 4, 12),
     ),
     Driver(
       id: 'd4',
       name: 'Vipin Das',
       phone: '+91 98950 33445',
-      licenceNumber: 'KL-13-2019-0012845', // PLACEHOLDER licence for Vipin Das
+      licenceNumber: 'KL-13-2019-0012845',
       isLicencePlaceholder: true,
       experienceYears: 5,
       assignedTruckPlate: 'KL 13 GH 3456',
+      licenceExpiryDate: DateTime(2027, 1, 20),
     ),
   ];
 
-  static const List<Truck> trucks = [
+  static final List<Truck> trucks = [
     Truck(
       plate: 'KL 11 AB 1234',
       model: 'BharatBenz 2823R 28T',
       capacityTons: 28,
       assignedDriverId: 'd1',
       status: TruckStatus.onTrip,
+      latitude: 10.5276,
+      longitude: 76.2144,
+      heading: 335.0,
+      lastSeen: DateTime(2026, 11, 17, 13, 20),
     ),
     Truck(
       plate: 'KL 07 CD 5678',
@@ -68,6 +76,10 @@ class SeedData {
       capacityTons: 35,
       assignedDriverId: 'd2',
       status: TruckStatus.onTrip,
+      latitude: 12.0168,
+      longitude: 77.2558,
+      heading: 210.0,
+      lastSeen: DateTime(2026, 11, 17, 13, 21),
     ),
     Truck(
       plate: 'KL 09 EF 9012',
@@ -75,6 +87,10 @@ class SeedData {
       capacityTons: 42,
       assignedDriverId: 'd3',
       status: TruckStatus.available,
+      latitude: 10.7867,
+      longitude: 76.6548,
+      heading: 0.0,
+      lastSeen: DateTime(2026, 11, 17, 13, 00),
     ),
     Truck(
       plate: 'KL 13 GH 3456',
@@ -82,6 +98,10 @@ class SeedData {
       capacityTons: 28,
       assignedDriverId: 'd4',
       status: TruckStatus.available,
+      latitude: 12.9141,
+      longitude: 74.8560,
+      heading: 180.0,
+      lastSeen: DateTime(2026, 11, 17, 13, 15),
     ),
     Truck(
       plate: 'KL 01 JK 7890',
@@ -89,6 +109,10 @@ class SeedData {
       capacityTons: 35,
       assignedDriverId: '',
       status: TruckStatus.inWorkshop,
+      latitude: 9.9816,
+      longitude: 76.2999,
+      heading: 0.0,
+      lastSeen: DateTime(2026, 11, 17, 11, 30),
     ),
   ];
 
