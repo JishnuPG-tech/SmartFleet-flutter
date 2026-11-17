@@ -1,0 +1,160 @@
+import 'models/driver.dart';
+import 'models/truck.dart';
+import 'models/trip.dart';
+
+class SeedData {
+  static const List<String> places = [
+    'Kochi Port',
+    'Kozhikode Hub',
+    'Bangalore Yard',
+    'Coimbatore Terminal',
+    'Chennai Central',
+    'Palakkad Depot',
+    'Mangalore Port',
+    'Kannur',
+    'Trivandrum Bay',
+  ];
+
+  static const List<Driver> drivers = [
+    Driver(
+      id: 'd1',
+      name: 'Suresh Kumar',
+      phone: '+91 98471 23456',
+      licenceNumber: 'KL-11-2015-0098231',
+      isLicencePlaceholder: false,
+      experienceYears: 12,
+      assignedTruckPlate: 'KL 11 AB 1234',
+    ),
+    Driver(
+      id: 'd2',
+      name: 'Manoj Varma',
+      phone: '+91 94470 87654',
+      licenceNumber: 'KL-07-2017-0043129',
+      isLicencePlaceholder: false,
+      experienceYears: 8,
+      assignedTruckPlate: 'KL 07 CD 5678',
+    ),
+    Driver(
+      id: 'd3',
+      name: 'Rahim Mohammed',
+      phone: '+91 97455 11223',
+      licenceNumber: 'KL-09-2012-0077654',
+      isLicencePlaceholder: false,
+      experienceYears: 15,
+      assignedTruckPlate: 'KL 09 EF 9012',
+    ),
+    Driver(
+      id: 'd4',
+      name: 'Vipin Das',
+      phone: '+91 98950 33445',
+      licenceNumber: 'KL-13-2019-0012845', // PLACEHOLDER licence for Vipin Das
+      isLicencePlaceholder: true,
+      experienceYears: 5,
+      assignedTruckPlate: 'KL 13 GH 3456',
+    ),
+  ];
+
+  static const List<Truck> trucks = [
+    Truck(
+      plate: 'KL 11 AB 1234',
+      model: 'BharatBenz 2823R 28T',
+      capacityTons: 28,
+      assignedDriverId: 'd1',
+      status: TruckStatus.onTrip,
+    ),
+    Truck(
+      plate: 'KL 07 CD 5678',
+      model: 'Tata Signa 3523.TK 35T',
+      capacityTons: 35,
+      assignedDriverId: 'd2',
+      status: TruckStatus.onTrip,
+    ),
+    Truck(
+      plate: 'KL 09 EF 9012',
+      model: 'Ashok Leyland 4220 42T',
+      capacityTons: 42,
+      assignedDriverId: 'd3',
+      status: TruckStatus.available,
+    ),
+    Truck(
+      plate: 'KL 13 GH 3456',
+      model: 'Eicher Pro 6028 28T',
+      capacityTons: 28,
+      assignedDriverId: 'd4',
+      status: TruckStatus.available,
+    ),
+    Truck(
+      plate: 'KL 01 JK 7890',
+      model: 'Mahindra Blazo X',
+      capacityTons: 35,
+      assignedDriverId: '',
+      status: TruckStatus.inWorkshop,
+    ),
+  ];
+
+  static List<Trip> trips = [
+    Trip(
+      id: 'TR-1025',
+      from: 'Kochi Port',
+      to: 'Kozhikode Hub',
+      cargo: 'Industrial Steel Coils',
+      weightTons: 24.5,
+      truckPlate: 'KL 11 AB 1234',
+      driverId: 'd1',
+      status: TripStatus.running,
+      startedAt: DateTime(2026, 11, 17, 8, 30),
+      distanceKm: 180.0,
+      distanceDoneKm: 122.4, // 68% progress
+      allowanceAmount: 4800,
+      isPaid: false,
+    ),
+    Trip(
+      id: 'TR-1026',
+      from: 'Bangalore Yard',
+      to: 'Coimbatore Terminal',
+      cargo: 'Auto Components',
+      weightTons: 18.2,
+      truckPlate: 'KL 07 CD 5678',
+      driverId: 'd2',
+      status: TripStatus.running,
+      startedAt: DateTime(2026, 11, 17, 11, 0),
+      distanceKm: 360.0,
+      distanceDoneKm: 126.0, // 35% progress
+      allowanceAmount: 6200,
+      isPaid: false,
+    ),
+    Trip(
+      id: 'TR-1027',
+      from: 'Chennai Central',
+      to: 'Palakkad Depot',
+      cargo: 'Processed Food Grain',
+      weightTons: 32.0,
+      truckPlate: 'KL 09 EF 9012',
+      driverId: 'd3',
+      status: TripStatus.delivered,
+      startedAt: DateTime(2026, 11, 16, 16, 0),
+      distanceKm: 540.0,
+      distanceDoneKm: 540.0,
+      allowanceAmount: 5200,
+      isPaid: true,
+      podOtp: '8492',
+      podPhotoPath: 'mock_cargo_unload_palakkad.jpg',
+      podSignatureSvg: 'mock_signature_data',
+    ),
+    Trip(
+      id: 'TR-1028',
+      from: 'Mangalore Port',
+      to: 'Kannur',
+      cargo: 'Heavy Machinery Units',
+      weightTons: 15.0,
+      truckPlate: 'KL 13 GH 3456',
+      driverId: 'd4',
+      status: TripStatus.waiting,
+      startedAt: DateTime(2026, 11, 17, 14, 0),
+      distanceKm: 145.0,
+      distanceDoneKm: 0.0,
+      allowanceAmount: 3800,
+      isPaid: false,
+    ),
+  ];
+}
