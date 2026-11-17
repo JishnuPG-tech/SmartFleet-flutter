@@ -14,6 +14,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+        packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            excludes += "**/libVkLayer_khronos_validation.so"
+        }
+    }
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.smartfleet.app.smartfleet_flutter"
@@ -30,11 +38,7 @@ android {
     }
 
     
-    packaging {
-        jniLibs {
-            keepDebugSymbols.add("**")
-        }
-    }
+
 
     buildTypes {
         release {
