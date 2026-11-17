@@ -1,10 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/components/status_chip.dart';
-import 'package:smartfleet_flutter/core/data/models/trip.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
-import 'package:smartfleet_flutter/screens/admin/trip_detail_screen.dart';
+import "package:flutter/material.dart";
+import "../../../core/design/tokens/app_colors.dart";
+import "../../../core/design/tokens/app_typography.dart";
+import "../../../core/design/tokens/app_spacing.dart";
+import "../../../core/design/components/status_chip.dart";
+import "../../../core/design/components/trip_card.dart";
+import "../../../core/data/models/trip.dart";
+import "../../../core/data/fleet_repository.dart";
+import "../../../l10n/app_localizations.dart";
+import "../trip_detail_screen.dart";
 
 class AdminTripsTab extends StatefulWidget {
   const AdminTripsTab({super.key});
@@ -14,11 +17,12 @@ class AdminTripsTab extends StatefulWidget {
 }
 
 class _AdminTripsTabState extends State<AdminTripsTab> {
-  String _searchQuery = '';
-  TripStatus? _selectedStatusFilter; // null means 'All'
+  String _searchQuery = "";
+  TripStatus? _selectedStatusFilter;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
     return StreamBuilder<List<Trip>>(
@@ -26,7 +30,6 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
       builder: (context, snapshot) {
         final allTrips = snapshot.data ?? [];
 
-        // Apply search filter and status filter
         final filteredTrips = allTrips.where((trip) {
           if (_selectedStatusFilter != null && trip.status != _selectedStatusFilter) {
             return false;
@@ -45,21 +48,26 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
-            // SEARCH FIELD
+            // SEARCH FIELD (Short & clean placeholder)
             TextField(
               decoration: InputDecoration(
                 hintText: l10n.searchTripsHint,
-                prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary, size: 26),
+                hintStyle: AppTypography.body(colors.textSecondary),
+                prefixIcon: Icon(Icons.search_rounded, color: colors.textSecondary, size: 24),
                 filled: true,
-                fillColor: AppColors.surfaceCard,
+                fillColor: colors.surface,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                  borderRadius: AppSpacing.buttonBorderRadius,
+                  borderSide: BorderSide(color: colors.border, width: 1.0),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+                  borderRadius: AppSpacing.buttonBorderRadius,
+                  borderSide: BorderSide(color: colors.border, width: 1.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppSpacing.buttonBorderRadius,
+                  borderSide: BorderSide(color: colors.brand, width: 2.0),
                 ),
               ),
               onChanged: (val) => setState(() => _searchQuery = val),
@@ -67,30 +75,35 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
 
             const SizedBox(height: 16),
 
-            // FILTER CHIPS (All, Running, Waiting, Delivered)
+            // HORIZONTALLY SCROLLABLE FILTER CHIPS (Never clipped)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
               child: Row(
                 children: [
                   _buildFilterChip(
+                    context,
                     label: l10n.filterAll,
                     isSelected: _selectedStatusFilter == null,
                     onTap: () => setState(() => _selectedStatusFilter = null),
                   ),
                   const SizedBox(width: 8),
                   _buildFilterChip(
+                    context,
                     label: l10n.filterRunning,
                     isSelected: _selectedStatusFilter == TripStatus.running,
                     onTap: () => setState(() => _selectedStatusFilter = TripStatus.running),
                   ),
                   const SizedBox(width: 8),
                   _buildFilterChip(
+                    context,
                     label: l10n.filterWaiting,
                     isSelected: _selectedStatusFilter == TripStatus.waiting,
                     onTap: () => setState(() => _selectedStatusFilter = TripStatus.waiting),
                   ),
                   const SizedBox(width: 8),
                   _buildFilterChip(
+                    context,
                     label: l10n.filterDelivered,
                     isSelected: _selectedStatusFilter == TripStatus.delivered,
                     onTap: () => setState(() => _selectedStatusFilter = TripStatus.delivered),
@@ -99,29 +112,51 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // TRIP CARDS LIST
+            // TRIPS LIST
             if (filteredTrips.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Text(
-                    'No trips found',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
+                child: Text(
+                  "No trips match your filter",
+                  style: AppTypography.body(colors.textSecondary),
+                  textAlign: TextAlign.center,
                 ),
               )
             else
               ...filteredTrips.map((trip) {
+                ChipStatusType statusType;
+                String statusLabel;
+                switch (trip.status) {
+                  case TripStatus.waiting:
+                    statusType = ChipStatusType.waiting;
+                    statusLabel = l10n.statusWaiting;
+                    break;
+                  case TripStatus.accepted:
+                  case TripStatus.running:
+                    statusType = ChipStatusType.running;
+                    statusLabel = l10n.statusRunning;
+                    break;
+                  case TripStatus.delivered:
+                    statusType = ChipStatusType.success;
+                    statusLabel = l10n.statusDelivered;
+                    break;
+                }
+
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: TripCard(
+                    id: trip.id,
+                    from: trip.from,
+                    to: trip.to,
+                    cargo: trip.cargo,
+                    weightTons: trip.weightTons,
+                    truckPlate: trip.truckPlate,
+                    statusType: statusType,
+                    statusLabel: statusLabel,
+                    progressPercent: trip.progressPercent,
+                    distanceDoneText: "${trip.distanceDoneKm.toStringAsFixed(1)} of ${trip.distanceKm.toStringAsFixed(0)} km done",
                     onTap: () {
                       Navigator.push(
                         context,
@@ -130,130 +165,6 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
                         ),
                       );
                     },
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ID + Status Chip
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                Text(
-                                  trip.id,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                StatusChip.forTrip(context, trip.status),
-                              ],
-                            ),
-                            const Divider(height: 24, color: AppColors.border),
-
-                            // Route
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Column(
-                                  children: [
-                                    Icon(Icons.trip_origin, size: 20, color: AppColors.accent),
-                                    SizedBox(height: 14),
-                                    Icon(Icons.location_on, size: 20, color: AppColors.statusProblemText),
-                                  ],
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        trip.from,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                        maxLines: 2,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        trip.to,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                        maxLines: 2,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            // Truck & Cargo
-                            Text(
-                              '${trip.truckPlate} · ${trip.cargo} (${trip.weightTons}T)',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            // Progress Bar
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: LinearProgressIndicator(
-                                value: trip.progressPercent,
-                                minHeight: 8,
-                                backgroundColor: AppColors.border,
-                                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-
-                            // Progress metric & Remaining
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                Text(
-                                  l10n.kmDoneOfTotal(
-                                    trip.distanceDoneKm.toStringAsFixed(1),
-                                    trip.distanceKm.toStringAsFixed(0),
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                Text(
-                                  '${(trip.progressPercent * 100).toInt()}%',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.accent,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
                 );
               }),
@@ -263,29 +174,31 @@ class _AdminTripsTabState extends State<AdminTripsTab> {
     );
   }
 
-  Widget _buildFilterChip({
+  Widget _buildFilterChip(
+    BuildContext context, {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    final colors = context.colors;
+
+    return InkWell(
       onTap: onTap,
+      borderRadius: AppSpacing.chipBorderRadius,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.accent : AppColors.surfaceCard,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? colors.brand : colors.surface,
+          borderRadius: AppSpacing.chipBorderRadius,
           border: Border.all(
-            color: isSelected ? AppColors.accent : AppColors.border,
+            color: isSelected ? colors.brand : colors.border,
             width: 1.5,
           ),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+          style: AppTypography.label(
+            isSelected ? colors.onBrand : colors.text,
           ),
         ),
       ),

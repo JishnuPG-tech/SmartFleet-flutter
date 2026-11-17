@@ -1,154 +1,89 @@
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:smartfleet_flutter/core/components/status_chip.dart';
-import 'package:smartfleet_flutter/core/data/models/trip.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
-import 'package:smartfleet_flutter/screens/driver/delivery_proof_flow.dart';
+import "package:flutter/material.dart";
+import "package:url_launcher/url_launcher.dart";
+import "../../../core/design/tokens/app_colors.dart";
+import "../../../core/design/tokens/app_typography.dart";
+import "../../../core/design/tokens/app_spacing.dart";
+import "../../../core/design/components/status_chip.dart";
+import "../../../core/design/components/status_headline.dart";
+import "../../../core/design/components/live_badge.dart";
+import "../../../core/design/components/buttons.dart";
+import "../../../core/data/models/driver.dart";
+import "../../../core/data/models/trip.dart";
+import "../../../core/data/fleet_repository.dart";
+import "../../../l10n/app_localizations.dart";
+import "../delivery_proof_flow.dart";
 
-class DriverTripTab extends StatefulWidget {
-  final String driverId;
+class DriverTripTab extends StatelessWidget {
+  final Driver? driver;
+  final String? driverId;
 
-  const DriverTripTab({super.key, required this.driverId});
+  const DriverTripTab({
+    super.key,
+    this.driver,
+    this.driverId,
+  }) : assert(driver != null || driverId != null);
 
-  @override
-  State<DriverTripTab> createState() => _DriverTripTabState();
-}
+  String get effectiveDriverId => driver?.id ?? driverId!;
 
-class _DriverTripTabState extends State<DriverTripTab> {
-  Future<void> _launchGoogleMaps(String destination) async {
-    final query = Uri.encodeComponent(destination);
-    final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$query');
+  void _openGoogleMaps(BuildContext context, String from, String to) async {
+    final query = Uri.encodeComponent("$from to $to Kerala");
+    final url = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query");
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open Google Maps')),
+          const SnackBar(content: Text("Could not open Google Maps")),
         );
       }
     }
   }
 
-  Future<void> _callOffice() async {
-    final uri = Uri.parse('tel:+919847123456');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
-  }
-
-  void _showBreakdownDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.statusProblemText, width: 2),
-        ),
-        title: Row(
-          children: [
-            const Icon(Icons.warning, color: AppColors.statusProblemText, size: 28),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                l10n.confirmBreakdownTitle,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.statusProblemText),
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          l10n.confirmBreakdownMessage,
-          style: const TextStyle(fontSize: 18, color: AppColors.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.btnCancel, style: const TextStyle(fontSize: 18)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.statusProblemText,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(140, 50),
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  backgroundColor: AppColors.statusProblemText,
-                  content: Text('Breakdown alert sent to fleet office!', style: TextStyle(fontSize: 16)),
-                ),
-              );
-            },
-            child: Text(l10n.btnConfirm, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+  void _callOffice(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Calling fleet office: +91 484 288 9000")),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
     return StreamBuilder<List<Trip>>(
       stream: LocalFleetRepository.instance.watchTrips(),
       builder: (context, snapshot) {
         final trips = snapshot.data ?? [];
-        Trip? activeTrip;
-        try {
-          activeTrip = trips.firstWhere(
-            (t) => t.driverId == widget.driverId && t.status != TripStatus.delivered,
-          );
-        } catch (_) {
-          activeTrip = null;
-        }
+        final driverTrips = trips.where((t) => t.driverId == effectiveDriverId).toList();
 
-        // CALM EMPTY STATE
+        final activeTrip = driverTrips.where((t) => t.status != TripStatus.delivered).firstOrNull;
+
         if (activeTrip == null) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceCard,
+                      color: colors.surfaceAlt,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.border, width: 2),
                     ),
-                    child: const Icon(Icons.local_shipping_outlined, size: 72, color: AppColors.textSecondary),
+                    child: Icon(Icons.check_circle_outline_rounded, size: 56, color: colors.statusSuccess),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   Text(
                     l10n.noTripTitle,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppTypography.title(colors.text),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Text(
                     l10n.noTripSubtitle,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: AppColors.textSecondary,
-                    ),
+                    style: AppTypography.body(colors.textSecondary),
                     textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 36),
-                  ElevatedButton.icon(
-                    onPressed: _callOffice,
-                    icon: const Icon(Icons.phone),
-                    label: Text(l10n.btnCallOffice),
                   ),
                 ],
               ),
@@ -156,290 +91,186 @@ class _DriverTripTabState extends State<DriverTripTab> {
           );
         }
 
-        // ACTIVE TRIP CARD & WORKFLOW
-        return SingleChildScrollView(
+        final trip = activeTrip;
+        final isRunning = trip.status == TripStatus.running || trip.status == TripStatus.accepted;
+
+        return ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Text(
-                '${l10n.currentTrip} (${activeTrip.id})',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // THE SINGLE TRIP CARD
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Status Chip + Truck
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          StatusChip.forTrip(context, activeTrip.status),
-                          Text(
-                            activeTrip.truckPlate,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 28, color: AppColors.border),
-
-                      // Two-line origin and destination (never clipped, wrapping allowed)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Column(
-                            children: [
-                              Icon(Icons.trip_origin, size: 24, color: AppColors.accent),
-                              SizedBox(height: 20),
-                              Icon(Icons.location_on, size: 24, color: AppColors.statusProblemText),
-                            ],
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  activeTrip.from,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.visible,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  activeTrip.to,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.visible,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Cargo & Weight
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Text(
-                          '${activeTrip.cargo} · ${activeTrip.weightTons} Tons',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Progress Bar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: activeTrip.progressPercent,
-                          minHeight: 12,
-                          backgroundColor: AppColors.border,
-                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accent),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // One line for km done of total + remaining km
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: [
-                          Text(
-                            l10n.kmDoneOfTotal(
-                              activeTrip.distanceDoneKm.toStringAsFixed(1),
-                              activeTrip.distanceKm.toStringAsFixed(0),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            '${(activeTrip.progressPercent * 100).toInt()}%',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.accent,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-
-                      // ETA line
-                      if (activeTrip.status == TripStatus.running)
-                        Text(
-                          '${l10n.eta}: ${activeTrip.remainingHours}h ${activeTrip.remainingMinutes}m (${activeTrip.remainingKm.toStringAsFixed(1)} km)',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-
-                      const SizedBox(height: 16),
-
-                      // Show Route in Google Maps button
-                      OutlinedButton(
-                        onPressed: () => _launchGoogleMaps(activeTrip!.to),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.map, color: AppColors.accent),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                l10n.btnShowRoute,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: StatusHeadline(
+                    headline: trip.status == TripStatus.waiting
+                        ? "New Trip Assigned"
+                        : "Arriving by 4:30 PM",
+                    subtitle: "To ${trip.to}",
                   ),
                 ),
-              ),
+                if (isRunning)
+                  const LiveBadge(
+                    status: LiveStatus.live,
+                    label: "Sharing ON",
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
 
-              const SizedBox(height: 24),
-
-              // THE ONE GIANT PRIMARY BUTTON CHANGING WITH STEP
-              _buildStepButton(context, activeTrip, l10n),
-
-              const SizedBox(height: 16),
-
-              // Under it: Full-width stacked Call Office and Help/Breakdown buttons
-              OutlinedButton(
-                onPressed: _callOffice,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            // TRIP CARD
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.phone),
-                    const SizedBox(width: 8),
-                    Flexible(
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Text(trip.id, style: AppTypography.heading(colors.text, isNumber: true)),
+                        StatusChipV2(
+                          label: trip.status == TripStatus.waiting ? l10n.statusWaiting : l10n.statusRunning,
+                          icon: trip.status == TripStatus.waiting ? Icons.hourglass_empty_rounded : Icons.navigation_rounded,
+                          type: trip.status == TripStatus.waiting ? ChipStatusType.waiting : ChipStatusType.running,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Column(
+                          children: [
+                            Icon(Icons.trip_origin_rounded, size: 22, color: colors.brand),
+                            Container(width: 2, height: 28, color: colors.border),
+                            Icon(Icons.location_on_rounded, size: 22, color: colors.statusDanger),
+                          ],
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(trip.from, style: AppTypography.heading(colors.text)),
+                              const SizedBox(height: 16),
+                              Text(trip.to, style: AppTypography.heading(colors.text)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceAlt,
+                        borderRadius: AppSpacing.buttonBorderRadius,
+                      ),
                       child: Text(
-                        l10n.btnCallOffice,
-                        textAlign: TextAlign.center,
+                        "${trip.cargo} · ${trip.weightTons} Tons",
+                        style: AppTypography.heading(colors.text),
                       ),
                     ),
+
+                    if (isRunning) ...[
+                      const SizedBox(height: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: trip.progressPercent,
+                          backgroundColor: colors.surfaceAlt,
+                          valueColor: AlwaysStoppedAnimation<Color>(colors.brand),
+                          minHeight: 8,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.kmDoneOfTotal(trip.distanceDoneKm.toStringAsFixed(1), trip.distanceKm.toStringAsFixed(0)),
+                        style: AppTypography.label(colors.textSecondary, isNumber: true),
+                      ),
+                    ],
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
 
-              const SizedBox(height: 12),
+            SecondaryButton(
+              label: l10n.btnShowRoute,
+              icon: Icons.map_outlined,
+              onPressed: () => _openGoogleMaps(context, trip.from, trip.to),
+            ),
+            const SizedBox(height: 14),
 
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.statusProblemText,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () => _showBreakdownDialog(context),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.warning, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        l10n.btnHelpBreakdown,
-                        textAlign: TextAlign.center,
-                      ),
+            if (trip.status == TripStatus.waiting) ...[
+              PrimaryButton(
+                label: l10n.btnAcceptTrip,
+                icon: Icons.check_circle_outline_rounded,
+                onPressed: () async {
+                  await LocalFleetRepository.instance.updateTripStatus(trip.id, TripStatus.accepted);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Trip accepted! Ready for dispatch.")),
+                    );
+                  }
+                },
+              ),
+            ] else if (trip.status == TripStatus.accepted) ...[
+              PrimaryButton(
+                label: l10n.btnStartTrip,
+                icon: Icons.play_arrow_rounded,
+                onPressed: () async {
+                  await LocalFleetRepository.instance.updateTripStatus(trip.id, TripStatus.running);
+                },
+              ),
+            ] else if (trip.status == TripStatus.running) ...[
+              PrimaryButton(
+                label: l10n.btnReached,
+                icon: Icons.flag_rounded,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DeliveryProofFlow(tripId: trip.id),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
-          ),
-        );
-      },
-    );
-  }
 
-  Widget _buildStepButton(BuildContext context, Trip trip, AppLocalizations l10n) {
-    switch (trip.status) {
-      case TripStatus.waiting:
-        return Column(
-          children: [
-            ElevatedButton(
-              onPressed: () => LocalFleetRepository.instance.updateTripStatus(trip.id, TripStatus.accepted),
-              child: Text(l10n.btnAcceptTrip),
+            const SizedBox(height: 14),
+
+            SecondaryButton(
+              label: l10n.btnCallOffice,
+              icon: Icons.phone_rounded,
+              onPressed: () => _callOffice(context),
             ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
-                // Rejecting trip
+            const SizedBox(height: 14),
+
+            DangerButton(
+              label: l10n.btnHelpBreakdown,
+              icon: Icons.warning_amber_rounded,
+              confirmTitle: l10n.confirmBreakdownTitle,
+              confirmMessage: l10n.confirmBreakdownMessage,
+              confirmActionLabel: l10n.btnConfirm,
+              onConfirmed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Trip rejected')),
+                  const SnackBar(
+                    content: Text("Breakdown alert sent to fleet office."),
+                    backgroundColor: Color(0xFFC62828),
+                  ),
                 );
               },
-              child: Text(
-                l10n.btnRejectTrip,
-                style: const TextStyle(color: AppColors.statusProblemText),
-              ),
             ),
           ],
         );
-
-      case TripStatus.accepted:
-        return ElevatedButton(
-          onPressed: () => LocalFleetRepository.instance.updateTripStatus(trip.id, TripStatus.running),
-          child: Text(l10n.btnStartTrip),
-        );
-
-      case TripStatus.running:
-        return ElevatedButton(
-          onPressed: () {
-            // Reached destination bay -> open proof flow
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => DeliveryProofFlow(tripId: trip.id)),
-            );
-          },
-          child: Text(l10n.btnReached),
-        );
-
-      case TripStatus.delivered:
-        return const SizedBox.shrink();
-    }
+      },
+    );
   }
 }

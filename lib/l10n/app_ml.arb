@@ -9,23 +9,20 @@
   "ownerRole": "ഞാൻ ഉടമയാണ്",
   "driverSelectTitle": "ലോഗിൻ ചെയ്യാൻ നിങ്ങളുടെ പേര് തിരഞ്ഞെടുക്കുക",
   "demoLoginNotice": "(ഡെമോ ലോഗിൻ)",
-
   "tabTrip": "ട്രിപ്പ്",
   "tabEarnings": "വരുമാനം",
   "tabProfile": "പ്രൊഫൈൽ",
   "tabHome": "ഹോം",
   "tabTrips": "ട്രിപ്പുകൾ",
   "tabTrucks": "ലോറികൾ",
-  "tabDrivers": "ഡ്രൈവർമാർ",
+  "tabDrivers": "ഡ്രൈവർ",
   "tabSettings": "സെറ്റിംഗ്സ്",
-
   "statusWaiting": "കാത്തിരിക്കുന്നു",
   "statusAccepted": "സ്വീകരിച്ചു",
   "statusRunning": "ഓടുന്നു",
   "statusDelivered": "പൂർത്തിയായി",
   "statusProblem": "പ്രശ്നം",
   "statusInWorkshop": "വർക്ക്‌ഷോപ്പിൽ",
-
   "currentTrip": "ഇപ്പോഴത്തെ ട്രിപ്പ്",
   "noTripTitle": "ഇപ്പോൾ ട്രിപ്പുകൾ ഒന്നുമില്ല",
   "noTripSubtitle": "ഓഫീസിൽ നിന്ന് അയക്കുന്നത് വരെ കാത്തിരിക്കുക.",
@@ -37,7 +34,6 @@
   "kmDoneOfTotal": "{totalKm} കി.മീറ്ററിൽ {doneKm} കി.മീറ്റർ കഴിഞ്ഞു",
   "kmRemaining": "{km} കി.മീറ്റർ ബാക്കി",
   "hoursMinutesRemaining": "{hours} മണിക്കൂർ {minutes} മിനിറ്റ് ബാക്കി",
-
   "btnAcceptTrip": "ട്രിപ്പ് സ്വീകരിക്കുക",
   "btnRejectTrip": "നിരസിക്കുക",
   "btnStartTrip": "യാത്ര തുടങ്ങുക",
@@ -50,7 +46,6 @@
   "confirmBreakdownMessage": "നിങ്ങളുടെ ലോറിക്ക് അടിയന്തര സഹായം വേണമെന്ന് ഓഫീസിൽ അറിയിക്കും.",
   "btnConfirm": "അതെ, അറിയിക്കുക",
   "btnCancel": "വേണ്ട",
-
   "proofStepIndicator": "ഘട്ടം {current} / 3",
   "proofStep1Title": "സാധനം വാങ്ങുന്ന ആളിൽ നിന്നുള്ള 4 അക്ക കോഡ് നൽകുക",
   "proofStep1Hint": "4 അക്ക കോഡ്",
@@ -64,13 +59,11 @@
   "btnBack": "പുറകോട്ട്",
   "btnSubmitProof": "ഉറപ്പാക്കി പൂർത്തിയാക്കുക",
   "proofCompletedToast": "ഡെലിവറി തെളിവ് വിജയകരമായി നൽകി",
-
   "thisWeekEarnings": "ഈ ആഴ്ചയിലെ ബത്ത",
   "nextPayoutDate": "അടുത്ത പെയ്‌മെന്റ്: {date}",
   "recentTrips": "കഴിഞ്ഞ ട്രിപ്പുകൾ",
   "statusPaid": "തന്നു",
   "statusPending": "ലഭിക്കാനുണ്ട്",
-
   "driverLicence": "ഡ്രൈവിംഗ് ലൈസൻസ്",
   "licenceValidity": "കാലാവധി: {date}",
   "assignedTruck": "തന്നിട്ടുള്ള ലോറി",
@@ -78,17 +71,15 @@
   "years": "{count} വർഷം",
   "btnChangeLanguage": "ഭാഷ മാറ്റുക",
   "btnLogout": "പുറത്തുകടക്കുക",
-
   "runningTrips": "ഓടുന്ന ട്രിപ്പുകൾ",
   "freeTrucks": "ഒഴിവുള്ള ലോറികൾ",
   "deliveredThisMonth": "ഈ മാസം എത്തിച്ചവ",
   "needsAttention": "ശ്രദ്ധിക്കേണ്ട കാര്യങ്ങൾ",
-  "btnNewTrip": "+ പുതിയ ട്രിപ്പ്",
+  "btnNewTrip": "പുതിയ ട്രിപ്പ്",
   "greetingMorning": "സുപ്രഭാതം",
   "greetingAfternoon": "ശുഭദിനം",
   "greetingEvening": "ശുഭസന്ധ്യ",
-
-  "searchTripsHint": "ട്രിപ്പ് നമ്പർ, സ്ഥലം അല്ലെങ്കിൽ ഡ്രൈവർ തിരയുക...",
+  "searchTripsHint": "ട്രിപ്പുകൾ തിരയുക",
   "filterAll": "എല്ലാം",
   "filterRunning": "ഓടുന്നു",
   "filterWaiting": "കാത്തിരിക്കുന്നു",
@@ -99,7 +90,6 @@
   "stepLoaded": "സാധനം കയറ്റി",
   "stepOnTheWay": "വഴിയിലാണ്",
   "stepDelivered": "എത്തിച്ചു",
-
   "newTripTitle": "പുതിയ ട്രിപ്പ് തുടങ്ങുക",
   "fromPlace": "എവിടെ നിന്ന്",
   "toPlace": "എങ്ങോട്ട്",
@@ -118,18 +108,16 @@
   "confirmTripTitle": "ട്രിപ്പ് വിവരങ്ങൾ ശരിയാണോ?",
   "confirmTripSubtitle": "ഡ്രൈവർക്ക് അയക്കുന്നതിന് മുൻപ് ഒത്തുനോക്കുക:",
   "btnConfirmAndSend": "ഉറപ്പിച്ചു അയക്കുക",
-
   "truckCapacity": "ശേഷി",
   "truckStatus": "നില",
-
   "driversTitle": "ഡ്രൈവർമാർ",
   "btnCall": "വിളിക്കുക",
-
   "settingsTitle": "സെറ്റിംഗ്സ്",
   "textSize": "അക്ഷരങ്ങളുടെ വലിപ്പം",
   "textNormal": "സാധാരണ",
   "textLarge": "വലുത്",
   "textExtraLarge": "വളരെ വലുത്",
   "appAbout": "സ്മാർട്ട്ഫ്ലീറ്റിനെക്കുറിച്ച്",
-  "appVersion": "പതിപ്പ് 2.0.0"
+  "appVersion": "പതിപ്പ് 2.0.0",
+  "statusAvailable": "ലഭ്യമാണ്"
 }

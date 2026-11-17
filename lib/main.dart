@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
-import 'package:smartfleet_flutter/screens/auth/role_select_screen.dart';
+import "package:flutter/material.dart";
+import "package:flutter_localizations/flutter_localizations.dart";
+import "core/design/theme/app_theme_v2.dart";
+import "core/design/theme/theme_controller.dart";
+import "core/data/fleet_repository.dart";
+import "l10n/app_localizations.dart";
+import "screens/auth/role_select_screen.dart";
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LocalFleetRepository.instance.getTrips();
   runApp(const SmartFleetApp());
 }
 
@@ -17,33 +20,39 @@ class SmartFleetApp extends StatefulWidget {
 }
 
 class _SmartFleetAppState extends State<SmartFleetApp> {
-  Locale _locale = const Locale('ml'); // Default to Malayalam for Kerala users
+  Locale _locale = const Locale("en");
 
-  void _setLocale(Locale loc) {
-    setState(() => _locale = loc);
+  void _toggleLanguage() {
+    setState(() {
+      _locale = _locale.languageCode == "en" ? const Locale("ml") : const Locale("en");
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SmartFleet',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      locale: _locale,
-      supportedLocales: const [
-        Locale('ml'),
-        Locale('en'),
-      ],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: RoleSelectScreen(
-        currentLocale: _locale,
-        onLocaleChanged: _setLocale,
-      ),
+    return AnimatedBuilder(
+      animation: ThemeController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: "SmartFleet",
+          debugShowCheckedModeBanner: false,
+          theme: AppThemeV2.buildTheme(Brightness.light),
+          darkTheme: AppThemeV2.buildTheme(Brightness.dark),
+          themeMode: ThemeController.instance.mode,
+          locale: _locale,
+          supportedLocales: const [
+            Locale("en"),
+            Locale("ml"),
+          ],
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: RoleSelectScreen(onToggleLanguage: _toggleLanguage),
+        );
+      },
     );
   }
 }

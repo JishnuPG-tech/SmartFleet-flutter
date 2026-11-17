@@ -191,7 +191,7 @@ abstract class AppLocalizations {
   /// No description provided for @tabDrivers.
   ///
   /// In en, this message translates to:
-  /// **'Drivers'**
+  /// **'Driver'**
   String get tabDrivers;
 
   /// No description provided for @tabSettings.
@@ -551,7 +551,7 @@ abstract class AppLocalizations {
   /// No description provided for @btnNewTrip.
   ///
   /// In en, this message translates to:
-  /// **'+ New trip'**
+  /// **'New trip'**
   String get btnNewTrip;
 
   /// No description provided for @greetingMorning.
@@ -575,7 +575,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchTripsHint.
   ///
   /// In en, this message translates to:
-  /// **'Search by trip id, place or driver...'**
+  /// **'Search trips'**
   String get searchTripsHint;
 
   /// No description provided for @filterAll.
@@ -811,6 +811,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version 2.0.0'**
   String get appVersion;
+
+  /// No description provided for @statusAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get statusAvailable;
 }
 
 class _AppLocalizationsDelegate

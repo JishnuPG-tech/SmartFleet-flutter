@@ -9,23 +9,20 @@
   "ownerRole": "I am an Owner",
   "driverSelectTitle": "Select your name to log in",
   "demoLoginNotice": "(Demo login)",
-
   "tabTrip": "Trip",
   "tabEarnings": "Earnings",
   "tabProfile": "Profile",
   "tabHome": "Home",
   "tabTrips": "Trips",
   "tabTrucks": "Trucks",
-  "tabDrivers": "Drivers",
+  "tabDrivers": "Driver",
   "tabSettings": "Settings",
-
   "statusWaiting": "Waiting",
   "statusAccepted": "Accepted",
   "statusRunning": "Running",
   "statusDelivered": "Done",
   "statusProblem": "Problem",
   "statusInWorkshop": "In workshop",
-
   "currentTrip": "Current Trip",
   "noTripTitle": "No trip now",
   "noTripSubtitle": "Wait for the office to send one.",
@@ -37,7 +34,6 @@
   "kmDoneOfTotal": "{doneKm} of {totalKm} km done",
   "kmRemaining": "{km} km remaining",
   "hoursMinutesRemaining": "{hours}h {minutes}m remaining",
-
   "btnAcceptTrip": "Accept trip",
   "btnRejectTrip": "Reject",
   "btnStartTrip": "Start trip",
@@ -50,7 +46,6 @@
   "confirmBreakdownMessage": "This will alert the fleet office that your truck needs immediate help.",
   "btnConfirm": "Yes, Send Alert",
   "btnCancel": "Cancel",
-
   "proofStepIndicator": "Step {current} of 3",
   "proofStep1Title": "Enter 4-digit code from receiver",
   "proofStep1Hint": "4-digit code",
@@ -64,13 +59,11 @@
   "btnBack": "Back",
   "btnSubmitProof": "Confirm & Complete",
   "proofCompletedToast": "Delivery proof submitted successfully",
-
   "thisWeekEarnings": "This week allowance",
   "nextPayoutDate": "Next payout: {date}",
   "recentTrips": "Recent trips",
   "statusPaid": "Paid",
   "statusPending": "Pending",
-
   "driverLicence": "Driving Licence",
   "licenceValidity": "Valid till: {date}",
   "assignedTruck": "Assigned Truck",
@@ -78,17 +71,15 @@
   "years": "{count} years",
   "btnChangeLanguage": "Change Language",
   "btnLogout": "Switch User / Logout",
-
   "runningTrips": "Running trips",
   "freeTrucks": "Free trucks",
   "deliveredThisMonth": "Delivered this month",
   "needsAttention": "Needs attention",
-  "btnNewTrip": "+ New trip",
+  "btnNewTrip": "New trip",
   "greetingMorning": "Good morning",
   "greetingAfternoon": "Good afternoon",
   "greetingEvening": "Good evening",
-
-  "searchTripsHint": "Search by trip id, place or driver...",
+  "searchTripsHint": "Search trips",
   "filterAll": "All",
   "filterRunning": "Running",
   "filterWaiting": "Waiting",
@@ -99,7 +90,6 @@
   "stepLoaded": "Loaded",
   "stepOnTheWay": "On the way",
   "stepDelivered": "Delivered",
-
   "newTripTitle": "Create New Trip",
   "fromPlace": "From (Origin)",
   "toPlace": "To (Destination)",
@@ -118,18 +108,16 @@
   "confirmTripTitle": "Confirm Trip Details",
   "confirmTripSubtitle": "Please check before sending to driver:",
   "btnConfirmAndSend": "Confirm & Send",
-
   "truckCapacity": "Capacity",
   "truckStatus": "Status",
-
   "driversTitle": "Drivers",
   "btnCall": "Call",
-
   "settingsTitle": "Settings",
   "textSize": "Text Size",
   "textNormal": "Normal",
   "textLarge": "Large",
   "textExtraLarge": "Extra Large",
   "appAbout": "About SmartFleet",
-  "appVersion": "Version 2.0.0"
+  "appVersion": "Version 2.0.0",
+  "statusAvailable": "Available"
 }

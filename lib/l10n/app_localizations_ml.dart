@@ -55,7 +55,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get tabTrucks => 'ലോറികൾ';
 
   @override
-  String get tabDrivers => 'ഡ്രൈവർമാർ';
+  String get tabDrivers => 'ഡ്രൈവർ';
 
   @override
   String get tabSettings => 'സെറ്റിംഗ്സ്';
@@ -251,7 +251,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get needsAttention => 'ശ്രദ്ധിക്കേണ്ട കാര്യങ്ങൾ';
 
   @override
-  String get btnNewTrip => '+ പുതിയ ട്രിപ്പ്';
+  String get btnNewTrip => 'പുതിയ ട്രിപ്പ്';
 
   @override
   String get greetingMorning => 'സുപ്രഭാതം';
@@ -263,8 +263,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get greetingEvening => 'ശുഭസന്ധ്യ';
 
   @override
-  String get searchTripsHint =>
-      'ട്രിപ്പ് നമ്പർ, സ്ഥലം അല്ലെങ്കിൽ ഡ്രൈവർ തിരയുക...';
+  String get searchTripsHint => 'ട്രിപ്പുകൾ തിരയുക';
 
   @override
   String get filterAll => 'എല്ലാം';
@@ -383,4 +382,7 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get appVersion => 'പതിപ്പ് 2.0.0';
+
+  @override
+  String get statusAvailable => 'ലഭ്യമാണ്';
 }

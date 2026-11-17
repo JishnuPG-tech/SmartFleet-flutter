@@ -1,9 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/data/models/trip.dart';
-import 'package:smartfleet_flutter/core/data/models/truck.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
+import "package:flutter/material.dart";
+import "../../../core/design/tokens/app_colors.dart";
+import "../../../core/design/tokens/app_typography.dart";
+import "../../../core/design/tokens/app_spacing.dart";
+import "../../../core/design/components/kpi_tile.dart";
+import "../../../core/design/components/buttons.dart";
+import "../../../core/data/models/trip.dart";
+import "../../../core/data/models/truck.dart";
+import "../../../core/data/fleet_repository.dart";
+import "../../../l10n/app_localizations.dart";
 
 String _getGreeting(DateTime now, String morning, String afternoon, String evening) {
   final hour = now.hour;
@@ -28,6 +32,7 @@ class AdminHomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final greeting = _getGreeting(
@@ -67,74 +72,55 @@ class AdminHomeTab extends StatelessWidget {
                 // GREETING
                 Text(
                   greeting,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppTypography.display(colors.text),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   l10n.tagline,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppTypography.body(colors.textSecondary),
                 ),
 
                 const SizedBox(height: 20),
 
-                // PRIMARY ACTION: + NEW TRIP BUTTON
-                ElevatedButton(
+                // NEW TRIP BUTTON (Single + Icon + Label)
+                PrimaryButton(
+                  label: l10n.btnNewTrip,
+                  icon: Icons.add_rounded,
                   onPressed: onNewTrip,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.add, size: 26),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          l10n.btnNewTrip,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
 
                 const SizedBox(height: 24),
 
-                // 3 BIG METRIC CARDS
+                // 3 BIG METRIC TILES
                 // 1. Running Trips
-                _buildBigMetricCard(
-                  title: l10n.runningTrips,
+                KpiTile(
+                  label: l10n.runningTrips,
                   count: runningCount,
-                  icon: Icons.navigation,
-                  accentColor: AppColors.statusRunningText,
-                  bgColor: AppColors.statusRunningBg,
+                  icon: Icons.navigation_rounded,
+                  accentColor: colors.brand,
+                  containerColor: colors.statusRunningContainer,
                 ),
 
                 const SizedBox(height: 12),
 
-                // 2. Free Trucks
-                _buildBigMetricCard(
-                  title: l10n.freeTrucks,
+                // 2. Free Trucks (Exactly matches Trucks tab count!)
+                KpiTile(
+                  label: l10n.freeTrucks,
                   count: availableTrucks,
-                  icon: Icons.local_shipping,
-                  accentColor: AppColors.statusDoneText,
-                  bgColor: AppColors.statusDoneBg,
+                  icon: Icons.local_shipping_rounded,
+                  accentColor: colors.statusSuccess,
+                  containerColor: colors.statusSuccessContainer,
                 ),
 
                 const SizedBox(height: 12),
 
                 // 3. Delivered this Month
-                _buildBigMetricCard(
-                  title: l10n.deliveredThisMonth,
+                KpiTile(
+                  label: l10n.deliveredThisMonth,
                   count: deliveredCount,
-                  icon: Icons.check_circle,
-                  accentColor: AppColors.statusDoneText,
-                  bgColor: AppColors.statusDoneBg,
+                  icon: Icons.check_circle_rounded,
+                  accentColor: colors.statusSuccess,
+                  containerColor: colors.statusSuccessContainer,
                 ),
 
                 const SizedBox(height: 24),
@@ -143,16 +129,12 @@ class AdminHomeTab extends StatelessWidget {
                 if (workshopTrucks.isNotEmpty || waitingCount > 0) ...[
                   Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: AppColors.statusProblemText, size: 26),
+                      Icon(Icons.warning_amber_rounded, color: colors.statusDanger, size: 26),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           l10n.needsAttention,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.statusProblemText,
-                          ),
+                          style: AppTypography.title(colors.statusDanger),
                         ),
                       ),
                     ],
@@ -166,13 +148,13 @@ class AdminHomeTab extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.statusProblemBg,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.statusProblemText.withOpacity(0.4), width: 1.5),
+                          color: colors.statusDangerContainer,
+                          borderRadius: AppSpacing.buttonBorderRadius,
+                          border: Border.all(color: colors.statusDanger.withValues(alpha: 0.4), width: 1.5),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.build, color: AppColors.statusProblemText, size: 28),
+                            Icon(Icons.build_rounded, color: colors.statusDanger, size: 28),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -180,19 +162,11 @@ class AdminHomeTab extends StatelessWidget {
                                 children: [
                                   Text(
                                     t.plate,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary,
-                                    ),
+                                    style: AppTypography.heading(colors.text, isNumber: true),
                                   ),
                                   Text(
-                                    '${t.model} · ${l10n.statusInWorkshop}',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.statusProblemText,
-                                    ),
+                                    "${t.model} · ${l10n.statusInWorkshop}",
+                                    style: AppTypography.body(colors.statusDanger),
                                   ),
                                 ],
                               ),
@@ -208,22 +182,18 @@ class AdminHomeTab extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.statusWaitingBg,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.statusWaitingText.withOpacity(0.4), width: 1.5),
+                        color: colors.statusWaitingContainer,
+                        borderRadius: AppSpacing.buttonBorderRadius,
+                        border: Border.all(color: colors.statusWaiting.withValues(alpha: 0.4), width: 1.5),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.hourglass_empty, color: AppColors.statusWaitingText, size: 28),
+                          Icon(Icons.hourglass_empty_rounded, color: colors.statusWaiting, size: 28),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              '$waitingCount trip(s) waiting for driver confirmation',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.statusWaitingText,
-                              ),
+                              "$waitingCount trip(s) waiting for driver confirmation",
+                              style: AppTypography.body(colors.statusWaiting),
                             ),
                           ),
                         ],
@@ -233,79 +203,16 @@ class AdminHomeTab extends StatelessWidget {
                 ],
 
                 // VIEW ALL TRIPS BUTTON
-                OutlinedButton(
+                SecondaryButton(
+                  label: l10n.tabTrips,
+                  icon: Icons.receipt_long_rounded,
                   onPressed: onViewAllTrips,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.receipt_long, color: AppColors.accent),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          l10n.tabTrips,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             );
           },
         );
       },
-    );
-  }
-
-  Widget _buildBigMetricCard({
-    required String title,
-    required int count,
-    required IconData icon,
-    required Color accentColor,
-    required Color bgColor,
-  }) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, size: 32, color: accentColor),
-            ),
-            const SizedBox(width: 18),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    count.toString(),
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      color: accentColor,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

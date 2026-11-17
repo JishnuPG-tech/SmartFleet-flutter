@@ -1,118 +1,98 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/data/models/driver.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
-import 'package:smartfleet_flutter/screens/driver/driver_main_screen.dart';
-// Note: OwnerMainScreen will be built in Phase 3; for now role select navigates to Driver or shows placeholder/nav
-import 'package:smartfleet_flutter/screens/admin/admin_main_screen.dart';
+import "package:flutter/material.dart";
+import "../../core/design/tokens/app_colors.dart";
+import "../../core/design/tokens/app_typography.dart";
+import "../../core/design/components/buttons.dart";
+import "../../core/data/models/driver.dart";
+import "../../core/data/fleet_repository.dart";
+import "../../l10n/app_localizations.dart";
+import "../admin/admin_main_screen.dart";
+import "../driver/driver_main_screen.dart";
 
 class RoleSelectScreen extends StatelessWidget {
-  final Locale currentLocale;
-  final Function(Locale)? onLocaleChanged;
+  final VoidCallback? onToggleLanguage;
+  final Locale? currentLocale;
+  final ValueChanged<Locale>? onLocaleChanged;
 
   const RoleSelectScreen({
     super.key,
-    this.currentLocale = const Locale('ml'),
+    this.onToggleLanguage,
+    this.currentLocale,
     this.onLocaleChanged,
   });
 
-  void _showDriverLoginSheet(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  void _loginAsOwner(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AdminMainScreen(onToggleLanguage: onToggleLanguage),
+      ),
+    );
+  }
 
-    // DEMO LOGIN NOTE: Until real backend authentication is connected,
-    // drivers select their name from the verified roster.
+  void _showDriverPicker(BuildContext context, AppLocalizations l10n, List<Driver> drivers) {
+    final colors = context.colors;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
-      isScrollControlled: true,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return FutureBuilder<List<Driver>>(
-          future: LocalFleetRepository.instance.getDrivers(),
-          builder: (context, snapshot) {
-            final drivers = snapshot.data ?? [];
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.driverSelectTitle,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.demoLoginNotice,
-                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
-                  ),
-                  const SizedBox(height: 16),
-                  ...drivers.map((d) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          alignment: Alignment.centerLeft,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.driverSelectTitle,
+                  style: AppTypography.title(colors.text),
+                ),
+                Text(
+                  l10n.demoLoginNotice,
+                  style: AppTypography.label(colors.textSecondary),
+                ),
+                const SizedBox(height: 20),
+                ...drivers.map((driver) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Card(
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colors.brand.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.person_rounded, color: colors.brand),
                         ),
-                        onPressed: () {
+                        title: Text(driver.name, style: AppTypography.heading(colors.text)),
+                        subtitle: Text(
+                          "${driver.assignedTruckPlate} · ${driver.phone}",
+                          style: AppTypography.body(colors.textSecondary),
+                        ),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () {
                           Navigator.pop(ctx);
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (_) => DriverMainScreen(
-                                driverId: d.id,
-                                onToggleLanguage: () {
-                                  final newLoc = currentLocale.languageCode == 'ml'
-                                      ? const Locale('en')
-                                      : const Locale('ml');
-                                  onLocaleChanged?.call(newLoc);
-                                },
+                                driver: driver,
+                                onToggleLanguage: onToggleLanguage,
                               ),
                             ),
                           );
                         },
-                        child: Row(
-                          children: [
-                            const Icon(Icons.person, color: AppColors.accent, size: 28),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    d.name,
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                  ),
-                                  Text(
-                                    '${d.assignedTruckPlate} · ${d.phone}',
-                                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
-                          ],
-                        ),
                       ),
-                    );
-                  }),
-                ],
-              ),
-            );
-          },
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -120,140 +100,80 @@ class RoleSelectScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final isMl = currentLocale.languageCode == 'ml';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 16),
+      backgroundColor: colors.bg,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        actions: [
+          if (onToggleLanguage != null)
+            TextButton.icon(
+              onPressed: onToggleLanguage,
+              icon: Icon(Icons.language_rounded, size: 22, color: colors.brand),
+              label: Text(
+                Localizations.localeOf(context).languageCode == "ml" ? "English" : "മലയാളം",
+                style: AppTypography.label(colors.brand),
+              ),
+            ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: StreamBuilder<List<Driver>>(
+        stream: LocalFleetRepository.instance.watchDrivers(),
+        builder: (context, snapshot) {
+          final drivers = snapshot.data ?? [];
 
-              // Logo & App Name
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    borderRadius: BorderRadius.circular(20),
+                    color: colors.brand.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.local_shipping, size: 64, color: Colors.white),
+                  child: Icon(Icons.local_shipping_rounded, size: 64, color: colors.brand),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                l10n.appTitle,
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.tagline,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
+                const SizedBox(height: 24),
 
-              const SizedBox(height: 24),
-
-              // Language Choice: Two Big Buttons
-              Text(
-                l10n.selectLanguage,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textSecondary,
+                Text(
+                  l10n.appTitle,
+                  style: AppTypography.display(colors.text),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isMl ? AppColors.accent : AppColors.surfaceCard,
-                        foregroundColor: isMl ? Colors.white : AppColors.textPrimary,
-                        side: BorderSide(
-                          color: isMl ? AppColors.accent : AppColors.border,
-                          width: 2,
-                        ),
-                      ),
-                      onPressed: () => onLocaleChanged?.call(const Locale('ml')),
-                      child: Text(l10n.malayalam),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: !isMl ? AppColors.accent : AppColors.surfaceCard,
-                        foregroundColor: !isMl ? Colors.white : AppColors.textPrimary,
-                        side: BorderSide(
-                          color: !isMl ? AppColors.accent : AppColors.border,
-                          width: 2,
-                        ),
-                      ),
-                      onPressed: () => onLocaleChanged?.call(const Locale('en')),
-                      child: Text(l10n.english),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-
-              // Large Role Selection Buttons
-              // Driver Role with STEERING WHEEL icon
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(64),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.tagline,
+                  style: AppTypography.heading(colors.textSecondary),
+                  textAlign: TextAlign.center,
                 ),
-                onPressed: () => _showDriverLoginSheet(context),
-                icon: const Icon(Icons.drive_eta, size: 30),
-                label: Text(
-                  l10n.driverRole,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-              ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 48),
 
-              // Owner Role with BUILDING icon
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(64),
+                // DRIVER BUTTON (Primary)
+                PrimaryButton(
+                  label: l10n.driverRole,
+                  icon: Icons.person_pin_rounded,
+                  onPressed: () => _showDriverPicker(context, l10n, drivers),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminMainScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.business, size: 30, color: AppColors.accent),
-                label: Text(
-                  l10n.ownerRole,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                ),
-              ),
 
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+                const SizedBox(height: 16),
+
+                // OWNER BUTTON (Secondary)
+                SecondaryButton(
+                  label: l10n.ownerRole,
+                  icon: Icons.business_center_rounded,
+                  onPressed: () => _loginAsOwner(context),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

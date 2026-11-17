@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
+import "package:flutter/material.dart";
+import "../../core/design/tokens/app_colors.dart";
+import "../../core/design/tokens/app_typography.dart";
+import "../../core/design/tokens/app_spacing.dart";
+import "../../core/design/components/buttons.dart";
+import "../../core/data/fleet_repository.dart";
+import "../../l10n/app_localizations.dart";
 
 class DeliveryProofFlow extends StatefulWidget {
   final String tripId;
@@ -13,11 +16,13 @@ class DeliveryProofFlow extends StatefulWidget {
 }
 
 class _DeliveryProofFlowState extends State<DeliveryProofFlow> {
-  int _currentStep = 1; // 1, 2, 3
-  final TextEditingController _otpController = TextEditingController();
-  bool _photoCaptured = false;
+  int _currentStep = 1;
+
+  final _otpController = TextEditingController();
+  bool _photoTaken = false;
   final List<Offset?> _signaturePoints = [];
-  String? _errorMessage;
+
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -26,81 +31,82 @@ class _DeliveryProofFlowState extends State<DeliveryProofFlow> {
   }
 
   void _nextStep() {
-    setState(() => _errorMessage = null);
-
     if (_currentStep == 1) {
-      // NOTE: OTP validation is mock/local until real backend exists.
-      // Accepts any 4-digit numeric code entered by receiver.
-      final code = _otpController.text.trim();
-      if (code.length != 4 || int.tryParse(code) == null) {
-        setState(() {
-          _errorMessage = 'Please enter a valid 4-digit code from receiver';
-        });
+      if (_otpController.text.trim().length != 4) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter a valid 4-digit OTP")),
+        );
         return;
       }
-      setState(() => _currentStep = 2);
     } else if (_currentStep == 2) {
-      if (!_photoCaptured) {
-        setState(() {
-          _errorMessage = 'Please take a photo of the unloaded cargo';
-        });
+      if (!_photoTaken) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please take a photo of the unloaded cargo")),
+        );
         return;
       }
-      setState(() => _currentStep = 3);
     }
+    setState(() => _currentStep++);
   }
 
   void _prevStep() {
     if (_currentStep > 1) {
-      setState(() {
-        _errorMessage = null;
-        _currentStep--;
-      });
+      setState(() => _currentStep--);
     } else {
       Navigator.pop(context);
     }
   }
 
-  Future<void> _submitProof() async {
+  void _submitProof(AppLocalizations l10n) async {
     if (_signaturePoints.isEmpty) {
-      setState(() {
-        _errorMessage = 'Receiver must sign before completing delivery';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please ask the receiver to sign in the box")),
+      );
       return;
     }
 
-    // Submit to repository
-    await LocalFleetRepository.instance.submitProofOfDelivery(
-      widget.tripId,
-      otp: _otpController.text.trim(),
-      photoPath: 'cargo_proof_${widget.tripId}.jpg',
-      signatureSvg: 'signature_data_${_signaturePoints.length}_pts',
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: AppColors.accent,
-          content: Text(
-            AppLocalizations.of(context).proofCompletedToast,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ),
+    setState(() => _isSubmitting = true);
+    try {
+      await LocalFleetRepository.instance.submitProofOfDelivery(
+        widget.tripId,
+        otp: _otpController.text.trim(),
+        photoPath: "cargo_proof_${widget.tripId}.jpg",
+        signatureSvg: "sig_points_${_signaturePoints.length}",
       );
-      Navigator.pop(context, true);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.proofCompletedToast),
+            backgroundColor: const Color(0xFF0B6E3A),
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
+      backgroundColor: colors.bg,
       appBar: AppBar(
-        title: Text(l10n.btnUploadProof),
+        title: Text(
+          l10n.btnUploadProof,
+          style: AppTypography.title(colors.text),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _prevStep,
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: colors.border, height: 1.0),
         ),
       ),
       body: SafeArea(
@@ -109,86 +115,58 @@ class _DeliveryProofFlowState extends State<DeliveryProofFlow> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Step indicator
+              // Step indicator container
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceCard,
+                  color: colors.surfaceAlt,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Text(
-                  l10n.proofStepIndicator(_currentStep),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
+                  l10n.proofStepIndicator(_currentStep.toString()),
+                  style: AppTypography.heading(colors.text),
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Visible Error Banner
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.statusProblemBg,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.statusProblemText),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline, color: AppColors.statusProblemText),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(
-                            color: AppColors.statusProblemText,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Step Content
+              // Step content
               Expanded(
-                child: SingleChildScrollView(
-                  child: _buildCurrentStep(l10n),
+                child: ListView(
+                  children: [
+                    if (_currentStep == 1) _buildStep1(context, l10n),
+                    if (_currentStep == 2) _buildStep2(context, l10n),
+                    if (_currentStep == 3) _buildStep3(context, l10n),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 16),
 
-              // Bottom Navigation Actions
-              Row(
-                children: [
-                  if (_currentStep > 1) ...[
-                    Expanded(
-                      flex: 1,
-                      child: OutlinedButton(
-                        onPressed: _prevStep,
-                        child: Text(l10n.btnBack),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _currentStep == 3 ? _submitProof : _nextStep,
-                      child: Text(_currentStep == 3 ? l10n.btnSubmitProof : l10n.btnNext),
-                    ),
-                  ),
-                ],
-              ),
+              // Action buttons
+              if (_currentStep < 3)
+                PrimaryButton(
+                  label: l10n.btnNext,
+                  icon: Icons.arrow_forward_rounded,
+                  onPressed: _nextStep,
+                )
+              else
+                PrimaryButton(
+                  label: l10n.btnSubmitProof,
+                  icon: Icons.check_circle_rounded,
+                  isLoading: _isSubmitting,
+                  onPressed: () => _submitProof(l10n),
+                ),
+
+              if (_currentStep > 1) ...[
+                const SizedBox(height: 12),
+                SecondaryButton(
+                  label: l10n.btnBack,
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: _prevStep,
+                ),
+              ],
             ],
           ),
         ),
@@ -196,166 +174,143 @@ class _DeliveryProofFlowState extends State<DeliveryProofFlow> {
     );
   }
 
-  Widget _buildCurrentStep(AppLocalizations l10n) {
-    switch (_currentStep) {
-      case 1:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildStep1(BuildContext context, AppLocalizations l10n) {
+    final colors = context.colors;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.proofStep1Title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-            ),
+            Text(l10n.proofStep1Title, style: AppTypography.heading(colors.text)),
             const SizedBox(height: 16),
             TextField(
               controller: _otpController,
               keyboardType: TextInputType.number,
               maxLength: 4,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 12),
+              style: AppTypography.display(colors.text, isNumber: true),
               decoration: InputDecoration(
-                hintText: '••••',
-                counterText: '',
+                hintText: "••••",
                 filled: true,
-                fillColor: AppColors.surfaceCard,
+                fillColor: colors.surfaceAlt,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
+                  borderRadius: AppSpacing.buttonBorderRadius,
+                  borderSide: BorderSide(color: colors.border),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 20),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.proofStep1Hint,
-              style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
             ),
           ],
-        );
+        ),
+      ),
+    );
+  }
 
-      case 2:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildStep2(BuildContext context, AppLocalizations l10n) {
+    final colors = context.colors;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.proofStep2Title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 20),
+            Text(l10n.proofStep2Title, style: AppTypography.heading(colors.text)),
+            const SizedBox(height: 16),
             Container(
-              height: 220,
+              height: 180,
+              width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border, width: 2),
+                color: colors.surfaceAlt,
+                borderRadius: AppSpacing.cardBorderRadius,
+                border: Border.all(color: colors.border),
               ),
-              child: Center(
-                child: _photoCaptured
-                    ? Column(
+              child: _photoTaken
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_rounded, size: 48, color: colors.statusSuccess),
+                        const SizedBox(height: 8),
+                        Text(l10n.proofStep2PhotoTaken, style: AppTypography.heading(colors.statusSuccess)),
+                      ],
+                    )
+                  : InkWell(
+                      onTap: () => setState(() => _photoTaken = true),
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.check_circle, size: 64, color: AppColors.accent),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.proofStep2PhotoTaken,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.camera_alt, size: 56, color: AppColors.textSecondary),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.proofStep2TakePhoto,
-                            style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
-                          ),
+                          Icon(Icons.camera_alt_outlined, size: 48, color: colors.brand),
+                          const SizedBox(height: 8),
+                          Text(l10n.proofStep2TakePhoto, style: AppTypography.heading(colors.brand)),
                         ],
                       ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => setState(() => _photoCaptured = true),
-              icon: const Icon(Icons.camera),
-              label: Text(_photoCaptured ? 'Retake Photo' : l10n.proofStep2TakePhoto),
+                    ),
             ),
           ],
-        );
+        ),
+      ),
+    );
+  }
 
-      case 3:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildStep3(BuildContext context, AppLocalizations l10n) {
+    final colors = context.colors;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.proofStep3Title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: Text(l10n.proofStep3Title, style: AppTypography.heading(colors.text))),
+                TextButton(
+                  onPressed: () => setState(() => _signaturePoints.clear()),
+                  child: Text(l10n.proofStep3Clear, style: AppTypography.label(colors.statusDanger)),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Container(
-              height: 200,
+              height: 180,
+              width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border, width: 2),
+                color: colors.surfaceAlt,
+                borderRadius: AppSpacing.cardBorderRadius,
+                border: Border.all(color: colors.border),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: GestureDetector(
-                  onPanUpdate: (details) {
-                    final box = context.findRenderObject() as RenderBox?;
-                    if (box != null) {
-                      setState(() {
-                        _signaturePoints.add(details.localPosition);
-                      });
-                    }
-                  },
-                  onPanEnd: (_) => setState(() => _signaturePoints.add(null)),
-                  child: CustomPaint(
-                    painter: _SignaturePainter(_signaturePoints),
-                    child: Center(
-                      child: _signaturePoints.isEmpty
-                          ? Text(
-                              l10n.proofStep3SignHint,
-                              style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
-                            )
-                          : const SizedBox.expand(),
-                    ),
-                  ),
+              child: GestureDetector(
+                onPanUpdate: (details) {
+                  setState(() => _signaturePoints.add(details.localPosition));
+                },
+                onPanEnd: (_) => setState(() => _signaturePoints.add(null)),
+                child: CustomPaint(
+                  painter: _SignaturePainter(points: _signaturePoints, strokeColor: colors.text),
+                  size: Size.infinite,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => setState(() => _signaturePoints.clear()),
-                icon: const Icon(Icons.refresh),
-                label: Text(l10n.proofStep3Clear),
-              ),
-            ),
           ],
-        );
-
-      default:
-        return const SizedBox.shrink();
-    }
+        ),
+      ),
+    );
   }
 }
 
 class _SignaturePainter extends CustomPainter {
   final List<Offset?> points;
+  final Color strokeColor;
 
-  _SignaturePainter(this.points);
+  _SignaturePainter({required this.points, required this.strokeColor});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.textPrimary
+      ..color = strokeColor
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3.5;
+      ..strokeWidth = 3.0;
 
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i] != null && points[i + 1] != null) {
@@ -365,5 +320,5 @@ class _SignaturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SignaturePainter oldDelegate) => true;
+  bool shouldRepaint(covariant _SignaturePainter oldDelegate) => true;
 }

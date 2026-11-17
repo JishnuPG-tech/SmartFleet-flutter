@@ -1,17 +1,10 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/core/data/models/trip.dart';
-import 'package:smartfleet_flutter/core/data/seed_data.dart';
 import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
 import 'package:smartfleet_flutter/l10n/app_localizations.dart';
 import 'package:smartfleet_flutter/screens/auth/role_select_screen.dart';
-import 'package:smartfleet_flutter/screens/driver/driver_main_screen.dart';
 import 'package:smartfleet_flutter/screens/driver/tabs/driver_trip_tab.dart';
 import 'package:smartfleet_flutter/screens/driver/tabs/driver_earnings_tab.dart';
 import 'package:smartfleet_flutter/screens/driver/tabs/driver_profile_tab.dart';

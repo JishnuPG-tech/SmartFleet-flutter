@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/data/models/driver.dart';
-import 'package:smartfleet_flutter/core/data/seed_data.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
+import "package:flutter/material.dart";
+import "../../core/design/tokens/app_colors.dart";
+import "../../core/design/tokens/app_typography.dart";
+import "../../core/design/tokens/app_spacing.dart";
+import "../../core/design/components/buttons.dart";
+import "../../core/data/models/driver.dart";
+import "../../core/data/seed_data.dart";
+import "../../core/data/fleet_repository.dart";
+import "../../l10n/app_localizations.dart";
 
 class CreateTripScreen extends StatefulWidget {
   const CreateTripScreen({super.key});
@@ -34,24 +37,21 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final driver = drivers.firstWhere((d) => d.id == _selectedDriverId);
+    final colors = context.colors;
 
     // Show Confirmation Dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          backgroundColor: AppColors.background,
+          backgroundColor: colors.surface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.border, width: 2),
+            borderRadius: AppSpacing.cardBorderRadius,
+            side: BorderSide(color: colors.border),
           ),
           title: Text(
             l10n.confirmTripTitle,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
+            style: AppTypography.title(colors.text),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -59,22 +59,22 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
             children: [
               Text(
                 l10n.confirmTripSubtitle,
-                style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                style: AppTypography.body(colors.textSecondary),
               ),
               const SizedBox(height: 16),
               Text(
-                '$_selectedFrom ➔ $_selectedTo',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.accent),
+                "$_selectedFrom ➔ $_selectedTo",
+                style: AppTypography.heading(colors.brand),
               ),
               const SizedBox(height: 8),
               Text(
-                'Cargo: ${_cargoController.text.trim()} (${_weightController.text.trim()} Tons)',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                "Cargo: ${_cargoController.text.trim()} (${_weightController.text.trim()} Tons)",
+                style: AppTypography.body(colors.text),
               ),
               const SizedBox(height: 8),
               Text(
-                'Driver: ${driver.name} · ${driver.assignedTruckPlate}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                "Driver: ${driver.name} · ${driver.assignedTruckPlate}",
+                style: AppTypography.body(colors.text),
               ),
             ],
           ),
@@ -83,13 +83,18 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
               onPressed: () => Navigator.pop(ctx, false),
               child: Text(
                 l10n.btnCancel,
-                style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
+                style: AppTypography.heading(colors.textSecondary),
               ),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(minimumSize: const Size(120, 48)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.brand,
+                foregroundColor: colors.onBrand,
+                minimumSize: const Size(120, 48),
+                shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
+              ),
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(l10n.btnConfirmAndSend),
+              child: Text(l10n.btnConfirmAndSend, style: AppTypography.heading(colors.onBrand)),
             ),
           ],
         );
@@ -100,7 +105,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
       setState(() => _isSubmitting = true);
       try {
         final weight = double.tryParse(_weightController.text.trim()) ?? 10.0;
-        final newTrip = await LocalFleetRepository.instance.createTrip(
+        await LocalFleetRepository.instance.createTrip(
           from: _selectedFrom!,
           to: _selectedTo!,
           cargo: _cargoController.text.trim(),
@@ -110,21 +115,12 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Trip ${newTrip.id} sent to ${driver.name}!'),
-              backgroundColor: AppColors.accent,
+            const SnackBar(
+              content: Text("Trip created and dispatched to driver!"),
+              backgroundColor: Color(0xFF0B6E3A),
             ),
           );
           Navigator.pop(context);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to create trip: $e'),
-              backgroundColor: AppColors.statusProblemText,
-            ),
-          );
         }
       } finally {
         if (mounted) setState(() => _isSubmitting = false);
@@ -134,224 +130,167 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final places = SeedData.places;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.bg,
       appBar: AppBar(
         title: Text(
           l10n.newTripTitle,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            color: AppColors.textPrimary,
-          ),
+          style: AppTypography.title(colors.text),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.5),
-          child: Container(color: AppColors.border, height: 1.5),
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: colors.border, height: 1.0),
         ),
       ),
-      body: FutureBuilder<List<Driver>>(
-        future: LocalFleetRepository.instance.getDrivers(),
+      body: StreamBuilder<List<Driver>>(
+        stream: LocalFleetRepository.instance.watchDrivers(),
         builder: (context, snapshot) {
           final drivers = snapshot.data ?? [];
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. FROM PLACE
-                  Text(
-                    l10n.fromPlace,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+          return Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+              children: [
+                // 1. ORIGIN PICKER
+                Text(l10n.fromPlace, style: AppTypography.heading(colors.text)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _selectedFrom,
+                  hint: Text(l10n.selectPlace, style: AppTypography.body(colors.textSecondary)),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.trip_origin_rounded, color: colors.brand),
+                    filled: true,
+                    fillColor: colors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                      borderSide: BorderSide(color: colors.border),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    value: _selectedFrom,
-                    hint: Text(l10n.selectPlace),
-                    items: places.map((p) {
-                      return DropdownMenuItem(value: p, child: Text(p));
-                    }).toList(),
-                    onChanged: (val) => setState(() => _selectedFrom = val),
-                    validator: (val) => val == null ? l10n.errFromRequired : null,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.trip_origin, color: AppColors.accent),
-                      filled: true,
-                      fillColor: AppColors.surfaceCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                      ),
+                  items: places.map((p) => DropdownMenuItem(value: p, child: Text(p, style: AppTypography.body(colors.text)))).toList(),
+                  onChanged: (val) => setState(() => _selectedFrom = val),
+                  validator: (val) => val == null ? l10n.errFromRequired : null,
+                ),
+
+                const SizedBox(height: 20),
+
+                // 2. DESTINATION PICKER
+                Text(l10n.toPlace, style: AppTypography.heading(colors.text)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _selectedTo,
+                  hint: Text(l10n.selectPlace, style: AppTypography.body(colors.textSecondary)),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.location_on_rounded, color: colors.statusDanger),
+                    filled: true,
+                    fillColor: colors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                      borderSide: BorderSide(color: colors.border),
                     ),
                   ),
+                  items: places.map((p) => DropdownMenuItem(value: p, child: Text(p, style: AppTypography.body(colors.text)))).toList(),
+                  onChanged: (val) => setState(() => _selectedTo = val),
+                  validator: (val) {
+                    if (val == null) return l10n.errToRequired;
+                    if (val == _selectedFrom) return l10n.errSamePlace;
+                    return null;
+                  },
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-                  // 2. TO PLACE
-                  Text(
-                    l10n.toPlace,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                // 3. CARGO & WEIGHT
+                Text(l10n.cargoTitleLabel, style: AppTypography.heading(colors.text)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _cargoController,
+                  decoration: InputDecoration(
+                    hintText: "e.g. Industrial Steel Coils",
+                    hintStyle: AppTypography.body(colors.textSecondary),
+                    prefixIcon: Icon(Icons.inventory_2_outlined, color: colors.brand),
+                    filled: true,
+                    fillColor: colors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                      borderSide: BorderSide(color: colors.border),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    value: _selectedTo,
-                    hint: Text(l10n.selectPlace),
-                    items: places.map((p) {
-                      return DropdownMenuItem(value: p, child: Text(p));
-                    }).toList(),
-                    onChanged: (val) => setState(() => _selectedTo = val),
-                    validator: (val) {
-                      if (val == null) return l10n.errToRequired;
-                      if (val == _selectedFrom) return l10n.errSamePlace;
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.location_on, color: AppColors.statusProblemText),
-                      filled: true,
-                      fillColor: AppColors.surfaceCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                      ),
+                  style: AppTypography.body(colors.text),
+                  validator: (val) => val == null || val.trim().isEmpty ? l10n.errCargoRequired : null,
+                ),
+
+                const SizedBox(height: 20),
+
+                Text(l10n.cargoWeightLabel, style: AppTypography.heading(colors.text)),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _weightController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    hintText: "e.g. 24.5",
+                    hintStyle: AppTypography.body(colors.textSecondary),
+                    prefixIcon: Icon(Icons.scale_rounded, color: colors.brand),
+                    filled: true,
+                    fillColor: colors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                      borderSide: BorderSide(color: colors.border),
                     ),
                   ),
+                  style: AppTypography.body(colors.text),
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) return l10n.errWeightRequired;
+                    final n = double.tryParse(val.trim());
+                    if (n == null || n <= 0) return l10n.errWeightRequired;
+                    return null;
+                  },
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-                  // 3. CARGO DESCRIPTION
-                  Text(
-                    l10n.cargoTitleLabel,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                // 4. ASSIGN DRIVER
+                Text(l10n.assignDriverLabel, style: AppTypography.heading(colors.text)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _selectedDriverId,
+                  hint: Text(l10n.selectDriverHint, style: AppTypography.body(colors.textSecondary)),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.person_outline_rounded, color: colors.brand),
+                    filled: true,
+                    fillColor: colors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.buttonBorderRadius,
+                      borderSide: BorderSide(color: colors.border),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _cargoController,
-                    decoration: InputDecoration(
-                      hintText: 'e.g. Industrial Steel Coils, Cement Bags',
-                      prefixIcon: const Icon(Icons.inventory_2, color: AppColors.textSecondary),
-                      filled: true,
-                      fillColor: AppColors.surfaceCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return l10n.errCargoRequired;
-                      return null;
-                    },
-                  ),
+                  items: drivers.map((d) {
+                    return DropdownMenuItem(
+                      value: d.id,
+                      child: Text("${d.name} (${d.assignedTruckPlate})", style: AppTypography.body(colors.text)),
+                    );
+                  }).toList(),
+                  onChanged: (val) => setState(() => _selectedDriverId = val),
+                  validator: (val) => val == null ? l10n.errDriverRequired : null,
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 32),
 
-                  // 4. WEIGHT IN TONS
-                  Text(
-                    l10n.cargoWeightLabel,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _weightController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      hintText: 'e.g. 24.5',
-                      prefixIcon: const Icon(Icons.scale, color: AppColors.textSecondary),
-                      filled: true,
-                      fillColor: AppColors.surfaceCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return l10n.errWeightRequired;
-                      final n = double.tryParse(val.trim());
-                      if (n == null || n <= 0) return l10n.errWeightRequired;
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // 5. ASSIGN DRIVER
-                  Text(
-                    l10n.assignDriverLabel,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    value: _selectedDriverId,
-                    hint: Text(l10n.selectDriverHint),
-                    items: drivers.map((d) {
-                      return DropdownMenuItem(
-                        value: d.id,
-                        child: Text('${d.name} (${d.assignedTruckPlate})'),
-                      );
-                    }).toList(),
-                    onChanged: (val) => setState(() => _selectedDriverId = val),
-                    validator: (val) => val == null ? l10n.errDriverRequired : null,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.person, color: AppColors.accent),
-                      filled: true,
-                      fillColor: AppColors.surfaceCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: AppColors.border, width: 1.5),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // SUBMIT BUTTON
-                  ElevatedButton(
-                    onPressed: _isSubmitting ? null : () => _onConfirmAndSubmit(l10n, drivers),
-                    child: _isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.send, color: Colors.white),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  l10n.btnSendToDriver,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ],
-              ),
+                // SUBMIT BUTTON (56dp)
+                PrimaryButton(
+                  label: l10n.btnSendToDriver,
+                  icon: Icons.send_rounded,
+                  isLoading: _isSubmitting,
+                  onPressed: () => _onConfirmAndSubmit(l10n, drivers),
+                ),
+              ],
             ),
           );
         },

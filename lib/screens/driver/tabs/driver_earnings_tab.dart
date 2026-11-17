@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/data/models/trip.dart';
-import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
+import "package:flutter/material.dart";
+import "../../../core/design/tokens/app_colors.dart";
+import "../../../core/design/tokens/app_typography.dart";
+import "../../../core/design/components/status_chip.dart";
+import "../../../core/design/utils/currency_formatter.dart";
+import "../../../core/data/models/trip.dart";
+import "../../../core/data/fleet_repository.dart";
+import "../../../l10n/app_localizations.dart";
 
 class DriverEarningsTab extends StatelessWidget {
   final String driverId;
@@ -11,6 +14,7 @@ class DriverEarningsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
     return StreamBuilder<List<Trip>>(
@@ -19,7 +23,6 @@ class DriverEarningsTab extends StatelessWidget {
         final allTrips = snapshot.data ?? [];
         final driverTrips = allTrips.where((t) => t.driverId == driverId).toList();
 
-        // Calculate this week allowance sum
         int thisWeekSum = 0;
         for (final t in driverTrips) {
           thisWeekSum += t.allowanceAmount;
@@ -37,29 +40,17 @@ class DriverEarningsTab extends StatelessWidget {
                   children: [
                     Text(
                       l10n.thisWeekEarnings,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary,
-                      ),
+                      style: AppTypography.heading(colors.textSecondary),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '₹${thisWeekSum.toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))'), (m) => '${m[1]},')}',
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.accent,
-                      ),
+                      CurrencyFormatter.format(thisWeekSum), // Strict Indian grouping: ₹4,800
+                      style: AppTypography.display(colors.brand, isNumber: true),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      l10n.nextPayoutDate('Friday, 21 Nov 2026'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
+                      l10n.nextPayoutDate("Friday, 21 Nov 2026"),
+                      style: AppTypography.label(colors.textSecondary),
                     ),
                   ],
                 ),
@@ -71,11 +62,7 @@ class DriverEarningsTab extends StatelessWidget {
             // RECENT TRIPS SECTION
             Text(
               l10n.recentTrips,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.title(colors.text),
             ),
             const SizedBox(height: 12),
 
@@ -84,7 +71,7 @@ class DriverEarningsTab extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 32),
                 child: Text(
                   l10n.noTripTitle,
-                  style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
+                  style: AppTypography.body(colors.textSecondary),
                   textAlign: TextAlign.center,
                 ),
               )
@@ -106,48 +93,27 @@ class DriverEarningsTab extends StatelessWidget {
                             runSpacing: 8,
                             children: [
                               Text(
-                                trip.id, // Strictly TR-XXXX format
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
-                                ),
+                                trip.id,
+                                style: AppTypography.heading(colors.text, isNumber: true),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isPaid ? AppColors.statusDoneBg : AppColors.statusWaitingBg,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  isPaid ? l10n.statusPaid : l10n.statusPending,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: isPaid ? AppColors.statusDoneText : AppColors.statusWaitingText,
-                                  ),
-                                ),
+                              StatusChipV2(
+                                label: isPaid ? l10n.statusPaid : l10n.statusPending,
+                                icon: isPaid ? Icons.check_circle_rounded : Icons.hourglass_empty_rounded,
+                                type: isPaid ? ChipStatusType.success : ChipStatusType.waiting,
                               ),
                             ],
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            '${trip.from} ➔ ${trip.to}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
+                            "${trip.from} ➔ ${trip.to}",
+                            style: AppTypography.heading(colors.text),
                             maxLines: 2,
                             overflow: TextOverflow.visible,
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '₹${trip.allowanceAmount} · ${trip.cargo}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textSecondary,
-                            ),
+                            "${CurrencyFormatter.format(trip.allowanceAmount)} · ${trip.cargo}", // Strict format
+                            style: AppTypography.body(colors.textSecondary),
                           ),
                         ],
                       ),

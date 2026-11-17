@@ -55,7 +55,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabTrucks => 'Trucks';
 
   @override
-  String get tabDrivers => 'Drivers';
+  String get tabDrivers => 'Driver';
 
   @override
   String get tabSettings => 'Settings';
@@ -250,7 +250,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needsAttention => 'Needs attention';
 
   @override
-  String get btnNewTrip => '+ New trip';
+  String get btnNewTrip => 'New trip';
 
   @override
   String get greetingMorning => 'Good morning';
@@ -262,7 +262,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get greetingEvening => 'Good evening';
 
   @override
-  String get searchTripsHint => 'Search by trip id, place or driver...';
+  String get searchTripsHint => 'Search trips';
 
   @override
   String get filterAll => 'All';
@@ -380,4 +380,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appVersion => 'Version 2.0.0';
+
+  @override
+  String get statusAvailable => 'Available';
 }

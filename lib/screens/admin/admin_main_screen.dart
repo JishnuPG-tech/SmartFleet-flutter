@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:smartfleet_flutter/core/theme/app_theme.dart';
-import 'package:smartfleet_flutter/l10n/app_localizations.dart';
-import 'package:smartfleet_flutter/screens/admin/create_trip_screen.dart';
-import 'package:smartfleet_flutter/screens/admin/tabs/admin_home_tab.dart';
-import 'package:smartfleet_flutter/screens/admin/tabs/admin_trips_tab.dart';
-import 'package:smartfleet_flutter/screens/admin/tabs/admin_fleet_tab.dart';
-import 'package:smartfleet_flutter/screens/admin/tabs/admin_drivers_tab.dart';
+import "package:flutter/material.dart";
+import "../../core/design/tokens/app_colors.dart";
+import "../../core/design/tokens/app_typography.dart";
+import "../../l10n/app_localizations.dart";
+import "../settings/settings_screen.dart";
+import "create_trip_screen.dart";
+import "tabs/admin_home_tab.dart";
+import "tabs/admin_trips_tab.dart";
+import "tabs/admin_fleet_tab.dart";
+import "tabs/admin_drivers_tab.dart";
 
 class AdminMainScreen extends StatefulWidget {
   final VoidCallback? onToggleLanguage;
@@ -26,109 +28,94 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
     );
   }
 
+  void _openSettings(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SettingsScreen(onToggleLanguage: widget.onToggleLanguage),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context);
 
+    final tabs = [
+      AdminHomeTab(
+        onNewTrip: () => _openCreateTrip(context),
+        onViewAllTrips: () => setState(() => _currentIndex = 1),
+      ),
+      const AdminTripsTab(),
+      const AdminFleetTab(),
+      const AdminDriversTab(),
+    ];
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.bg,
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Strict: no back arrow on root tab
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               l10n.appTitle,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
-              ),
+              style: AppTypography.title(colors.text),
             ),
             Text(
               l10n.ownerRole,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
+              style: AppTypography.label(colors.textSecondary),
             ),
           ],
         ),
         actions: [
-          if (widget.onToggleLanguage != null)
-            TextButton.icon(
-              onPressed: widget.onToggleLanguage,
-              icon: const Icon(Icons.language, color: AppColors.accent, size: 20),
-              label: Text(
-                l10n.btnChangeLanguage,
-                style: const TextStyle(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
-            ),
           IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.textSecondary),
-            tooltip: l10n.btnLogout,
-            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.settings_outlined, color: colors.text, size: 26),
+            tooltip: l10n.settingsTitle,
+            onPressed: () => _openSettings(context),
           ),
+          const SizedBox(width: 8),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.5),
-          child: Container(color: AppColors.border, height: 1.5),
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: colors.border, height: 1.0),
         ),
       ),
-      body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            AdminHomeTab(
-              onNewTrip: () => _openCreateTrip(context),
-              onViewAllTrips: () => setState(() => _currentIndex = 1),
-            ),
-            const AdminTripsTab(),
-            const AdminFleetTab(),
-            const AdminDriversTab(),
-          ],
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: tabs,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.border, width: 1.5)),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          border: Border(top: BorderSide(color: colors.border, width: 1.0)),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.background,
-          selectedItemColor: AppColors.accent,
-          unselectedItemColor: AppColors.textSecondary,
-          selectedFontSize: 14,
-          unselectedFontSize: 14,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          showUnselectedLabels: true,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.dashboard_outlined),
-              activeIcon: const Icon(Icons.dashboard),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          backgroundColor: colors.surface,
+          indicatorColor: colors.brand.withValues(alpha: 0.15),
+          onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
+          destinations: [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined, color: colors.textSecondary),
+              selectedIcon: Icon(Icons.home_rounded, color: colors.brand),
               label: l10n.tabHome,
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.receipt_long_outlined),
-              activeIcon: const Icon(Icons.receipt_long),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined, color: colors.textSecondary),
+              selectedIcon: Icon(Icons.receipt_long_rounded, color: colors.brand),
               label: l10n.tabTrips,
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.local_shipping_outlined),
-              activeIcon: const Icon(Icons.local_shipping),
+            NavigationDestination(
+              icon: Icon(Icons.local_shipping_outlined, color: colors.textSecondary),
+              selectedIcon: Icon(Icons.local_shipping_rounded, color: colors.brand),
               label: l10n.tabTrucks,
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.people_outline),
-              activeIcon: const Icon(Icons.people),
-              label: l10n.tabDrivers,
+            NavigationDestination(
+              icon: Icon(Icons.people_outline_rounded, color: colors.textSecondary),
+              selectedIcon: Icon(Icons.people_rounded, color: colors.brand),
+              label: "Drivers",
             ),
           ],
         ),
