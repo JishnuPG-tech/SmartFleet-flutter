@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../core/components/bottom_dock.dart';
-import '../../core/theme/app_colors.dart';
-import 'tabs/driver_home_tab.dart';
-import 'tabs/driver_trips_tab.dart';
-import 'tabs/driver_earnings_tab.dart';
-import 'tabs/driver_profile_tab.dart';
+import 'package:smartfleet_flutter/core/theme/app_theme.dart';
+import 'package:smartfleet_flutter/l10n/app_localizations.dart';
+import 'package:smartfleet_flutter/screens/driver/tabs/driver_trip_tab.dart';
+import 'package:smartfleet_flutter/screens/driver/tabs/driver_earnings_tab.dart';
+import 'package:smartfleet_flutter/screens/driver/tabs/driver_profile_tab.dart';
 
 class DriverMainScreen extends StatefulWidget {
-  const DriverMainScreen({super.key});
+  final String driverId;
+  final VoidCallback onToggleLanguage;
+
+  const DriverMainScreen({
+    super.key,
+    required this.driverId,
+    required this.onToggleLanguage,
+  });
 
   @override
   State<DriverMainScreen> createState() => _DriverMainScreenState();
@@ -17,43 +22,58 @@ class DriverMainScreen extends StatefulWidget {
 class _DriverMainScreenState extends State<DriverMainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _tabs = const [
-    DriverHomeTab(),
-    DriverTripsTab(),
-    DriverEarningsTab(),
-    DriverProfileTab(),
-  ];
-
-  static const List<BottomNavItem> _navItems = [
-    BottomNavItem(icon: LucideIcons.home, label: 'Home'),
-    BottomNavItem(icon: LucideIcons.route, label: 'My Trips'),
-    BottomNavItem(icon: LucideIcons.wallet, label: 'Earnings'),
-    BottomNavItem(icon: LucideIcons.user, label: 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    final tabs = [
+      DriverTripTab(driverId: widget.driverId),
+      DriverEarningsTab(driverId: widget.driverId),
+      DriverProfileTab(
+        driverId: widget.driverId,
+        onToggleLanguage: widget.onToggleLanguage,
+      ),
+    ];
+
     return Scaffold(
-      backgroundColor: AppColors.midnightBlack,
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: _currentIndex,
-            children: _tabs,
+      appBar: AppBar(
+        title: Text(
+          _currentIndex == 0
+              ? l10n.tabTrip
+              : _currentIndex == 1
+                  ? l10n.tabEarnings
+                  : l10n.tabProfile,
+        ),
+        actions: [
+          IconButton(
+            tooltip: l10n.btnChangeLanguage,
+            icon: const Icon(Icons.language, size: 28),
+            onPressed: widget.onToggleLanguage,
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: BottomDock(
-              currentIndex: _currentIndex,
-              items: _navItems,
-              onTabSelected: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-            ),
+        ],
+      ),
+      body: SafeArea(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: tabs,
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        // Exactly 3 tabs with mandatory icon + label
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.local_shipping, size: 28),
+            label: l10n.tabTrip,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.account_balance_wallet, size: 28),
+            label: l10n.tabEarnings,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person, size: 28),
+            label: l10n.tabProfile,
           ),
         ],
       ),

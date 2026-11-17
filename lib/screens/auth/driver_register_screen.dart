@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:smartfleet_flutter/core/components/lucide_compat.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/state/fleet_state.dart';
 import '../driver/driver_main_screen.dart';

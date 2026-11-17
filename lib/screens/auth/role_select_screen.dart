@@ -1,318 +1,258 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../core/theme/app_colors.dart';
-import '../admin/admin_main_screen.dart';
-import '../driver/driver_main_screen.dart';
-import 'driver_register_screen.dart';
+import 'package:smartfleet_flutter/core/data/models/driver.dart';
+import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
+import 'package:smartfleet_flutter/core/theme/app_theme.dart';
+import 'package:smartfleet_flutter/l10n/app_localizations.dart';
+import 'package:smartfleet_flutter/screens/driver/driver_main_screen.dart';
+// Note: OwnerMainScreen will be built in Phase 3; for now role select navigates to Driver or shows placeholder/nav
+import 'package:smartfleet_flutter/screens/admin/admin_main_screen.dart';
 
 class RoleSelectScreen extends StatelessWidget {
-  const RoleSelectScreen({super.key});
+  final Locale currentLocale;
+  final Function(Locale)? onLocaleChanged;
+
+  const RoleSelectScreen({
+    super.key,
+    this.currentLocale = const Locale('ml'),
+    this.onLocaleChanged,
+  });
+
+  void _showDriverLoginSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    // DEMO LOGIN NOTE: Until real backend authentication is connected,
+    // drivers select their name from the verified roster.
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return FutureBuilder<List<Driver>>(
+          future: LocalFleetRepository.instance.getDrivers(),
+          builder: (context, snapshot) {
+            final drivers = snapshot.data ?? [];
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.driverSelectTitle,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.demoLoginNotice,
+                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 16),
+                  ...drivers.map((d) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DriverMainScreen(
+                                driverId: d.id,
+                                onToggleLanguage: () {
+                                  final newLoc = currentLocale.languageCode == 'ml'
+                                      ? const Locale('en')
+                                      : const Locale('ml');
+                                  onLocaleChanged?.call(newLoc);
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person, color: AppColors.accent, size: 28),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    d.name,
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                  ),
+                                  Text(
+                                    '${d.assignedTruckPlate} · ${d.phone}',
+                                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.midnightBlack,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Spacer(),
-              // Brand Mark
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: AppColors.acidLime,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.acidLime.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.local_shipping,
-                    color: AppColors.midnightBlack,
-                    size: 30,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'SMARTFLEET',
-                style: TextStyle(
-                  color: AppColors.pureWhite,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'MOVE SMART. MANAGE BETTER.',
-                style: TextStyle(
-                  color: AppColors.acidLime,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Enterprise commercial fleet management & driver cockpit operations.',
-                style: TextStyle(
-                  color: AppColors.mutedGray,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-              const Spacer(),
+    final l10n = AppLocalizations.of(context);
+    final isMl = currentLocale.languageCode == 'ml';
 
-              // Role Option: Fleet Owner / Admin
-              _buildRoleCard(
-                context,
-                title: 'Fleet Owner / Admin',
-                subtitle: 'Manage trips, lorries, drivers & live telemetry',
-                icon: Icons.dashboard_customize,
-                accentColor: AppColors.acidLime,
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AdminMainScreen()),
-                  );
-                },
-              ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               const SizedBox(height: 16),
 
-              // Role Option: Lorry Driver
-              _buildRoleCard(
-                context,
-                title: 'Lorry Driver / Pilot',
-                subtitle: 'Active mission boarding pass, route & proof of delivery',
-                icon: Icons.airline_seat_recline_normal,
-                accentColor: AppColors.skyInfo,
-                onTap: () {
-                  _showDriverOptionsSheet(context);
-                },
-              ),
-              const SizedBox(height: 24),
-              const Center(
-                child: Text(
-                  'v2.0.0 · Commercial Android Edition',
-                  style: TextStyle(
-                    color: AppColors.darkSubtext,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
+              // Logo & App Name
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(20),
                   ),
+                  child: const Icon(Icons.local_shipping, size: 64, color: Colors.white),
                 ),
               ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.appTitle,
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.tagline,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Language Choice: Two Big Buttons
+              Text(
+                l10n.selectLanguage,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isMl ? AppColors.accent : AppColors.surfaceCard,
+                        foregroundColor: isMl ? Colors.white : AppColors.textPrimary,
+                        side: BorderSide(
+                          color: isMl ? AppColors.accent : AppColors.border,
+                          width: 2,
+                        ),
+                      ),
+                      onPressed: () => onLocaleChanged?.call(const Locale('ml')),
+                      child: Text(l10n.malayalam),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: !isMl ? AppColors.accent : AppColors.surfaceCard,
+                        foregroundColor: !isMl ? Colors.white : AppColors.textPrimary,
+                        side: BorderSide(
+                          color: !isMl ? AppColors.accent : AppColors.border,
+                          width: 2,
+                        ),
+                      ),
+                      onPressed: () => onLocaleChanged?.call(const Locale('en')),
+                      child: Text(l10n.english),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
+
+              // Large Role Selection Buttons
+              // Driver Role with STEERING WHEEL icon
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(64),
+                ),
+                onPressed: () => _showDriverLoginSheet(context),
+                icon: const Icon(Icons.drive_eta, size: 30),
+                label: Text(
+                  l10n.driverRole,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Owner Role with BUILDING icon
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(64),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AdminMainScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.business, size: 30, color: AppColors.accent),
+                label: Text(
+                  l10n.ownerRole,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+              ),
+
+              const SizedBox(height: 20),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showDriverOptionsSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: AppColors.cardCharcoal,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.hairline,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'DRIVER ACCESS',
-              style: TextStyle(
-                color: AppColors.skyInfo,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Choose Entry Mode',
-              style: TextStyle(
-                color: AppColors.pureWhite,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            _buildSheetOption(
-              icon: LucideIcons.gauge,
-              title: 'Enter Cockpit (Suresh Kumar)',
-              subtitle: 'Active mission #TR-1025 · KL 11 AB 1234',
-              color: AppColors.accent,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DriverMainScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-
-            _buildSheetOption(
-              icon: LucideIcons.userPlus,
-              title: 'Register New Driver & Truck',
-              subtitle: 'Sarathi KYC onboarding, license & vehicle registration',
-              color: AppColors.blue,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DriverRegisterScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSheetOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.midnightBlack,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.hairline),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: AppColors.pureWhite,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: AppColors.mutedGray,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(LucideIcons.chevronRight, color: AppColors.mutedGray, size: 18),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRoleCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color accentColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.cardCharcoal,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.hairline, width: 0.8),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: accentColor, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: AppColors.pureWhite,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: AppColors.mutedGray,
-                      fontSize: 12,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: AppColors.mutedGray,
-            ),
-          ],
         ),
       ),
     );

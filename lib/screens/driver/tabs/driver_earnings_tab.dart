@@ -1,180 +1,163 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:smartfleet_flutter/core/data/models/trip.dart';
+import 'package:smartfleet_flutter/core/data/fleet_repository.dart';
+import 'package:smartfleet_flutter/core/theme/app_theme.dart';
+import 'package:smartfleet_flutter/l10n/app_localizations.dart';
 
 class DriverEarningsTab extends StatelessWidget {
-  const DriverEarningsTab({super.key});
+  final String driverId;
+
+  const DriverEarningsTab({super.key, required this.driverId});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.midnightBlack,
-      appBar: AppBar(
-        backgroundColor: AppColors.midnightBlack,
-        elevation: 0,
-        title: const Text(
-          'Earnings & Bata',
-          style: TextStyle(
-            color: AppColors.pureWhite,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: [
-          // Hero Balance Card
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: AppColors.cardCharcoal,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.accent.withOpacity(0.4)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final l10n = AppLocalizations.of(context);
+
+    return StreamBuilder<List<Trip>>(
+      stream: LocalFleetRepository.instance.watchTrips(),
+      builder: (context, snapshot) {
+        final allTrips = snapshot.data ?? [];
+        final driverTrips = allTrips.where((t) => t.driverId == driverId).toList();
+
+        // Calculate this week allowance sum
+        int thisWeekSum = 0;
+        for (final t in driverTrips) {
+          thisWeekSum += t.allowanceAmount;
+        }
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+          children: [
+            // BIG THIS WEEK CARD
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'TOTAL BATA EARNED (THIS WEEK)',
-                      style: TextStyle(
-                        color: AppColors.mutedGray,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
+                      l10n.thisWeekEarnings,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    Icon(LucideIcons.wallet, size: 16, color: AppColors.accent),
+                    const SizedBox(height: 12),
+                    Text(
+                      '₹${thisWeekSum.toString().replaceAllMapped(RegExp(r'(\d+?)(?=(\d\d)+(\d)(?!\d))'), (m) => '${m[1]},')}',
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.nextPayoutDate('Friday, 21 Nov 2026'),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  '₹18,450',
-                  style: TextStyle(
-                    color: AppColors.pureWhite,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.0,
-                    fontFamily: 'monospace',
-                  ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // RECENT TRIPS SECTION
+            Text(
+              l10n.recentTrips,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            if (driverTrips.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Text(
+                  l10n.noTripTitle,
+                  style: const TextStyle(fontSize: 18, color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Pending Auto-Transfer: ₹4,800 · Friday 6:00 PM',
-                  style: TextStyle(
-                    color: AppColors.accent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.midnightBlack,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.hairline),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(LucideIcons.landmark, size: 16, color: AppColors.mutedGray),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Federal Bank A/C Ending in **8192 · Verified',
-                          style: TextStyle(color: AppColors.pureWhite, fontSize: 12, fontWeight: FontWeight.w600),
-                        ),
+              )
+            else
+              ...driverTrips.map((trip) {
+                final isPaid = trip.isPaid || trip.status == TripStatus.delivered;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              Text(
+                                trip.id, // Strictly TR-XXXX format
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isPaid ? AppColors.statusDoneBg : AppColors.statusWaitingBg,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  isPaid ? l10n.statusPaid : l10n.statusPending,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: isPaid ? AppColors.statusDoneText : AppColors.statusWaitingText,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            '${trip.from} ➔ ${trip.to}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.visible,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            '₹${trip.allowanceAmount} · ${trip.cargo}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
-                      Icon(LucideIcons.checkCircle2, size: 14, color: AppColors.green),
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Payout History Header
-          const Text(
-            'Recent trip payouts',
-            style: TextStyle(
-              color: AppColors.pureWhite,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          _buildPayoutTile('Shipment #SF1025', 'Kochi Port → Kozhikode Hub', '₹4,800', 'In Progress', AppColors.accent),
-          _buildPayoutTile('Shipment #SF1027', 'Chennai Central → Palakkad Depot', '₹5,200', 'Settled to Bank', AppColors.green),
-          _buildPayoutTile('Shipment #SF1021', 'Kochi Port → Trivandrum Bay', '₹3,800', 'Settled to Bank', AppColors.green),
-          _buildPayoutTile('Shipment #SF1014', 'Bangalore Yard → Kochi SEZ', '₹6,400', 'Settled to Bank', AppColors.green),
-
-          const SizedBox(height: 80),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPayoutTile(String trip, String route, String amount, String status, Color statusColor) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.cardCharcoal,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.hairline),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  trip,
-                  style: const TextStyle(
-                    color: AppColors.pureWhite,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  route,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppColors.mutedGray, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                amount,
-                style: const TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                status,
-                style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-        ],
-      ),
+                );
+              }),
+          ],
+        );
+      },
     );
   }
 }
