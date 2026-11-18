@@ -1,3 +1,4 @@
+import "../../core/data/api_client.dart";
 import "package:flutter/material.dart";
 import "../../core/design/tokens/app_colors.dart";
 import "../../core/design/tokens/app_typography.dart";
@@ -141,6 +142,7 @@ class SettingsScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: AppSpacing.buttonBorderRadius),
                   ),
                   onPressed: () {
+                    ApiClient.instance.logout();
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(

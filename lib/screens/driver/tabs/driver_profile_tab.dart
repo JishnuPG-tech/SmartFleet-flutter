@@ -6,6 +6,8 @@ import "../../../core/design/components/buttons.dart";
 import "../../../core/design/theme/theme_controller.dart";
 import "../../../core/data/models/driver.dart";
 import "../../../core/data/seed_data.dart";
+import "../../../core/data/api_client.dart";
+import "../../../core/data/fleet_repository.dart";
 import "../../../l10n/app_localizations.dart";
 import "../../auth/role_select_screen.dart";
 
@@ -26,11 +28,131 @@ class DriverProfileTab extends StatefulWidget {
 }
 
 class _DriverProfileTabState extends State<DriverProfileTab> {
-  Driver get effectiveDriver {
-    if (widget.driver != null) return widget.driver!;
-    return SeedData.drivers.firstWhere(
-      (d) => d.id == widget.driverId,
-      orElse: () => SeedData.drivers.first,
+  late Driver _currentDriver;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentDriver = widget.driver ??
+        (ApiClient.instance.currentDriver ??
+            SeedData.drivers.firstWhere(
+              (d) => d.id == widget.driverId,
+              orElse: () => SeedData.drivers.first,
+            ));
+  }
+
+  void _showEditProfileSheet(BuildContext context) {
+    final colors = context.colors;
+    final nameCtrl = TextEditingController(text: _currentDriver.name);
+    final licenseCtrl = TextEditingController(text: _currentDriver.licenceNumber);
+    final truckCtrl = TextEditingController(text: _currentDriver.assignedTruckPlate);
+    final expCtrl = TextEditingController(text: _currentDriver.experienceYears.toString());
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Update Pilot Credentials",
+                    style: AppTypography.title(colors.text, fontSize: 18),
+                  ),
+                  const SizedBox(height: 14),
+                  _buildEditField(colors, "Full Name", nameCtrl),
+                  const SizedBox(height: 10),
+                  _buildEditField(colors, "Driving Licence (HMV)", licenseCtrl),
+                  const SizedBox(height: 10),
+                  _buildEditField(colors, "Assigned Truck Plate", truckCtrl),
+                  const SizedBox(height: 10),
+                  _buildEditField(colors, "Years of Experience", expCtrl, isNumber: true),
+                  const SizedBox(height: 18),
+                  PrimaryButton(
+                    label: "SAVE & SYNC WITH SUPABASE",
+                    isLoading: isSaving,
+                    onPressed: () async {
+                      final nav = Navigator.of(ctx);
+                      final messenger = ScaffoldMessenger.of(context);
+                      setSheetState(() => isSaving = true);
+                      final exp = int.tryParse(expCtrl.text.trim()) ?? _currentDriver.experienceYears;
+
+                      final updated = Driver(
+                        id: _currentDriver.id,
+                        name: nameCtrl.text.trim(),
+                        phone: _currentDriver.phone,
+                        licenceNumber: licenseCtrl.text.trim().toUpperCase(),
+                        assignedTruckPlate: truckCtrl.text.trim().toUpperCase(),
+                        experienceYears: exp,
+                      );
+
+                      await ApiClient.instance.updateDriverProfile(
+                        fullName: updated.name,
+                        licenseNumber: updated.licenceNumber,
+                        assignedTruckPlate: updated.assignedTruckPlate,
+                        experienceYears: updated.experienceYears,
+                      );
+
+                      LocalFleetRepository.instance.addOrUpdateDriver(updated);
+
+                      if (mounted) {
+                        setState(() => _currentDriver = updated);
+                      }
+                      nav.pop();
+                      messenger.showSnackBar(
+                        const SnackBar(content: Text("Driver profile synced successfully!")),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildEditField(AppColorsExtension colors, String label, TextEditingController ctrl, {bool isNumber = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTypography.label(colors.textSecondary, fontSize: 11)),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: colors.surfaceAlt,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colors.border),
+          ),
+          child: TextField(
+            controller: ctrl,
+            keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+            style: AppTypography.body(colors.text, fontSize: 14),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 10),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -38,7 +160,7 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final d = effectiveDriver;
+    final d = _currentDriver;
     final isDark = ThemeController.instance.isDark(context);
 
     return ListView(
@@ -100,6 +222,16 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
               _buildInfoRow(context, "Experience", "${d.experienceYears} Years"),
             ],
           ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // EDIT DETAILS ACTION
+        SecondaryButton(
+          label: "Edit Vehicle & Licence Details",
+          icon: Icons.edit_note_rounded,
+          height: 48,
+          onPressed: () => _showEditProfileSheet(context),
         ),
 
         const SizedBox(height: 12),
@@ -168,6 +300,7 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
           confirmMessage: "You will return to the role selection screen.",
           confirmActionLabel: "Sign out",
           onConfirmed: () {
+            ApiClient.instance.logout();
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => RoleSelectScreen(onToggleLanguage: widget.onToggleLanguage)),

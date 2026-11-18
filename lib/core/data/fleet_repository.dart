@@ -322,6 +322,16 @@ class LocalFleetRepository implements FleetRepository {
     return _driversController.stream;
   }
 
+  void addOrUpdateDriver(Driver driver) {
+    final idx = _drivers.indexWhere((d) => d.id == driver.id || d.phone == driver.phone);
+    if (idx != -1) {
+      _drivers[idx] = driver;
+    } else {
+      _drivers.insert(0, driver);
+    }
+    _notifyAll();
+  }
+
   @override
   Future<List<Driver>> getDrivers() async {
     await _init();
