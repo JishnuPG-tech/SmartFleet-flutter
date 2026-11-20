@@ -2,8 +2,6 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "../../core/design/tokens/app_colors.dart";
 import "../../core/design/tokens/app_typography.dart";
-import "../../core/design/components/smartfleet_logo.dart";
-import "../../l10n/app_localizations.dart";
 import "../settings/settings_screen.dart";
 import "admin_login_screen.dart";
 import "driver_auth_screen.dart";
@@ -23,30 +21,44 @@ class RoleSelectScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          // Language Switcher Chip
-          TextButton.icon(
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            ),
-            icon: Icon(Icons.language_rounded, size: 18, color: colors.textSecondary),
-            label: Text(
-              isMl ? "മലയാളം" : "English",
-              style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              onToggleLanguage?.call();
-            },
+        title: Text(
+          "SmartFleet",
+          style: TextStyle(
+            color: colors.text,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.4,
           ),
-          // Settings Gear
-          IconButton(
-            icon: Icon(Icons.settings_outlined, color: colors.textSecondary, size: 22),
+        ),
+        actions: [
+          TextButton(
             onPressed: () {
               HapticFeedback.lightImpact();
+              if (onToggleLanguage != null) {
+                onToggleLanguage!();
+              }
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              minimumSize: const Size(40, 32),
+            ),
+            child: Text(
+              isMl ? "English" : "മലയാളം",
+              style: TextStyle(
+                color: colors.textSecondary,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.tune_rounded, size: 18, color: colors.textSecondary),
+            onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SettingsScreen(onToggleLanguage: onToggleLanguage)),
+                MaterialPageRoute(
+                  builder: (_) => SettingsScreen(onToggleLanguage: onToggleLanguage),
+                ),
               );
             },
           ),
@@ -56,35 +68,28 @@ class RoleSelectScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
+              constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Centered Vector Logo
-                  const Center(
-                    child: SmartFleetLogo(size: 72),
-                  ),
+                  const SizedBox(height: 20),
 
-                  const SizedBox(height: 24),
-
-                  // Centered Title
                   Text(
                     "Are you an Admin or a Driver?",
                     textAlign: TextAlign.center,
                     style: AppTypography.title(colors.text, fontSize: 24).copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.6,
                     ),
                   ),
 
                   const SizedBox(height: 8),
 
-                  // Centered Subtitle
                   Text(
-                    "Select your role to access fleet operations or cockpit telematics.",
+                    "Select your workspace to continue.",
                     textAlign: TextAlign.center,
                     style: AppTypography.body(colors.textSecondary, fontSize: 14),
                   ),
@@ -94,12 +99,10 @@ class RoleSelectScreen extends StatelessWidget {
                   // 1. FLEET ADMINISTRATOR CARD
                   _buildRoleCard(
                     context,
-                    tag: "COMMAND PORTAL",
                     title: "Fleet Administrator",
-                    description: "Manage trucks, assign routes, monitor live GPS radar, and configure CMS parameters.",
-                    icon: Icons.shield_outlined,
+                    description: "Operations dispatch and system configuration",
                     onTap: () {
-                      HapticFeedback.mediumImpact();
+                      HapticFeedback.lightImpact();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -109,17 +112,15 @@ class RoleSelectScreen extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // 2. FLEET PILOT / DRIVER CARD
+                  // 2. FLEET DRIVER CARD
                   _buildRoleCard(
                     context,
-                    tag: "MOBILE COCKPIT",
-                    title: "Fleet Pilot / Driver",
-                    description: "Access assigned trip manifests, continuous navigation cockpit HUD, and complete POD deliveries.",
-                    icon: Icons.local_shipping_outlined,
+                    title: "Fleet Driver",
+                    description: "Active trip cockpit and delivery clearance",
                     onTap: () {
-                      HapticFeedback.mediumImpact();
+                      HapticFeedback.lightImpact();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -129,15 +130,19 @@ class RoleSelectScreen extends StatelessWidget {
                     },
                   ),
 
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 48),
 
-                  // Minimal footer
                   Center(
                     child: Text(
-                      "Kerala Corridor Fleet Logistics • Encrypted Session",
-                      style: AppTypography.mono(colors.textSecondary, fontSize: 10.5),
+                      "SmartFleet Operations",
+                      style: AppTypography.mono(
+                        colors.textSecondary.withValues(alpha: 0.5),
+                        fontSize: 11,
+                      ),
                     ),
                   ),
+
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -149,10 +154,8 @@ class RoleSelectScreen extends StatelessWidget {
 
   Widget _buildRoleCard(
     BuildContext context, {
-    required String tag,
     required String title,
     required String description,
-    required IconData icon,
     required VoidCallback onTap,
   }) {
     final colors = context.colors;
@@ -161,76 +164,48 @@ class RoleSelectScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        splashColor: colors.brand.withValues(alpha: 0.1),
-        highlightColor: colors.brand.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        splashColor: colors.brand.withValues(alpha: 0.08),
+        highlightColor: colors.brand.withValues(alpha: 0.04),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.border, width: 1.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colors.border, width: 1.0),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon Container
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colors.bg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colors.brand.withValues(alpha: 0.35), width: 1.0),
-                ),
-                child: Icon(icon, color: colors.brand, size: 24),
-              ),
-
-              const SizedBox(width: 16),
-
-              // Title and Description
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: colors.brand.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        tag,
-                        style: AppTypography.mono(colors.brand, fontSize: 9.5).copyWith(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
                     Text(
                       title,
-                      style: AppTypography.title(colors.text, fontSize: 17).copyWith(
-                        fontWeight: FontWeight.w700,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: colors.text,
+                        letterSpacing: -0.3,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: AppTypography.body(colors.textSecondary, fontSize: 12.5).copyWith(
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.textSecondary,
                         height: 1.35,
                       ),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(width: 8),
-
-              // Arrow
-              Padding(
-                padding: const EdgeInsets.only(top: 14.0),
-                child: Icon(Icons.arrow_forward_ios_rounded, color: colors.textSecondary, size: 16),
+              const SizedBox(width: 12),
+              Icon(
+                Icons.arrow_forward_rounded,
+                size: 18,
+                color: colors.textSecondary,
               ),
             ],
           ),

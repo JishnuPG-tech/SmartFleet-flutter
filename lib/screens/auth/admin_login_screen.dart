@@ -2,7 +2,6 @@ import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "../../core/design/tokens/app_colors.dart";
 import "../../core/design/tokens/app_typography.dart";
-import "../../core/design/components/buttons.dart";
 import "../../core/data/api_client.dart";
 import "../admin/admin_main_screen.dart";
 
@@ -54,7 +53,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       setState(() => _isLoading = false);
 
       if (res.isSuccess) {
-        HapticFeedback.mediumImpact();
+        HapticFeedback.lightImpact();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -62,7 +61,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ),
         );
       } else {
-        // Fallback for offline demo credentials
         if ((username == "admin" && password == "SmartFleet@2026") || username == "demo") {
           HapticFeedback.lightImpact();
           Navigator.pushReplacement(
@@ -93,73 +91,51 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     return Scaffold(
       backgroundColor: colors.bg,
       appBar: AppBar(
-        title: Text("Admin Sign In", style: AppTypography.title(colors.text, fontSize: 20)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: colors.text),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          "Admin Access",
+          style: TextStyle(
+            color: colors.text,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.4,
+          ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: colors.border, height: 1.0),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, size: 20, color: colors.text),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 380),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Header badge
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: colors.brand.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: colors.brand.withValues(alpha: 0.35), width: 1.0),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.shield_rounded, size: 13, color: colors.brand),
-                          const SizedBox(width: 6),
-                          Text(
-                            "COMMAND PORTAL ACCESS",
-                            style: AppTypography.mono(colors.brand, fontSize: 10.5).copyWith(
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
                   Text(
                     "Fleet Administrator",
                     textAlign: TextAlign.center,
-                    style: AppTypography.title(colors.text, fontSize: 26).copyWith(
-                      fontWeight: FontWeight.w800,
+                    style: AppTypography.title(colors.text, fontSize: 24).copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.6,
                     ),
                   ),
 
                   const SizedBox(height: 6),
 
                   Text(
-                    "Sign in to manage live radar dispatch, driver verification, and CMS configuration.",
+                    "Sign in to manage fleet operations and configuration.",
                     textAlign: TextAlign.center,
                     style: AppTypography.body(colors.textSecondary, fontSize: 13.5),
                   ),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
 
-                  // Error notification if present
                   if (_errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -168,42 +144,41 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: colors.statusDanger.withValues(alpha: 0.35)),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline_rounded, color: colors.statusDanger, size: 18),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(color: colors.statusDanger, fontSize: 12.5, fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(color: colors.statusDanger, fontSize: 12.5),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 16),
                   ],
 
-                  // Form Container Card
+                  // Form Card
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: colors.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: colors.border, width: 1.0),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Username", style: AppTypography.caption(colors.text).copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
+                        Text(
+                          "Username",
+                          style: TextStyle(
+                            color: colors.text,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
                         TextField(
                           controller: _usernameController,
                           style: TextStyle(color: colors.text, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: "admin",
                             hintStyle: TextStyle(color: colors.textSecondary.withValues(alpha: 0.5)),
-                            prefixIcon: Icon(Icons.person_outline_rounded, color: colors.textSecondary, size: 20),
                             filled: true,
                             fillColor: colors.bg,
                             border: OutlineInputBorder(
@@ -222,23 +197,29 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
 
-                        Text("Password", style: AppTypography.caption(colors.text).copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
+                        Text(
+                          "Password",
+                          style: TextStyle(
+                            color: colors.text,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
                         TextField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           style: TextStyle(color: colors.text, fontSize: 14),
                           decoration: InputDecoration(
-                            hintText: "••••••••••••",
+                            hintText: "••••••••",
                             hintStyle: TextStyle(color: colors.textSecondary.withValues(alpha: 0.5)),
-                            prefixIcon: Icon(Icons.lock_outline_rounded, color: colors.textSecondary, size: 20),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                 color: colors.textSecondary,
-                                size: 20,
+                                size: 18,
                               ),
                               onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
@@ -260,25 +241,49 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 22),
 
-                        PrimaryButton(
-                          label: "Enter Command Portal",
-                          onPressed: _handleLogin,
-                          isLoading: _isLoading,
-                          icon: Icons.login_rounded,
+                        SizedBox(
+                          width: double.infinity,
+                          height: 46,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.brand,
+                              foregroundColor: colors.onBrand,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: _isLoading ? null : _handleLogin,
+                            child: _isLoading
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.0,
+                                      valueColor: AlwaysStoppedAnimation<Color>(colors.onBrand),
+                                    ),
+                                  )
+                                : const Text(
+                                    "Sign In",
+                                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
+                                  ),
+                          ),
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
 
                   Center(
                     child: Text(
-                      "Encrypted session with Parivahan VAHAN & FASTag bridge",
-                      style: AppTypography.mono(colors.textSecondary, fontSize: 10.5),
-                      textAlign: TextAlign.center,
+                      "Default: admin / SmartFleet@2026",
+                      style: AppTypography.mono(
+                        colors.textSecondary.withValues(alpha: 0.5),
+                        fontSize: 11,
+                      ),
                     ),
                   ),
                 ],

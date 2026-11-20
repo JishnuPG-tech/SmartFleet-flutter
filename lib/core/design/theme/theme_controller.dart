@@ -20,7 +20,7 @@ class ThemeController extends ChangeNotifier {
   AppCanvasTheme _canvasTheme = AppCanvasTheme.midnightBlack;
   AppCanvasTheme get canvasTheme => _canvasTheme;
 
-  AppAccentPalette _palette = AppAccentPalette.limeGreen;
+  AppAccentPalette _palette = AppAccentPalette.claudeOrange;
   AppAccentPalette get palette => _palette;
 
   bool _hasCompletedOnboarding = false;

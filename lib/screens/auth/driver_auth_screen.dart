@@ -221,46 +221,19 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Header Badge
-                      Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: colors.brand.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: colors.brand.withValues(alpha: 0.35), width: 1.0),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.local_shipping_rounded, size: 14, color: colors.brand),
-                              const SizedBox(width: 6),
-                              Text(
-                                "MOBILE COCKPIT HUD",
-                                style: AppTypography.mono(colors.brand, fontSize: 10.5).copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
                       Text(
-                        "Fleet Pilot Sign In",
+                        "Fleet Driver Sign In",
                         textAlign: TextAlign.center,
                         style: AppTypography.title(colors.text, fontSize: 24).copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.6,
                         ),
                       ),
 
                       const SizedBox(height: 6),
 
                       Text(
-                        "Enter registered driver phone number and authorization PIN.",
+                        "Enter registered phone number and PIN.",
                         textAlign: TextAlign.center,
                         style: AppTypography.body(colors.textSecondary, fontSize: 13.5),
                       ),
@@ -322,10 +295,9 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
                             const SizedBox(height: 24),
 
                             PrimaryButton(
-                              label: "Launch Cockpit HUD",
+                              label: "Sign In",
                               onPressed: _handleDriverLogin,
                               isLoading: _isLoading,
-                              icon: Icons.navigation_rounded,
                             ),
                           ],
                         ),
@@ -356,15 +328,16 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        "Register New Fleet Pilot",
+                        "Driver Application",
                         textAlign: TextAlign.center,
                         style: AppTypography.title(colors.text, fontSize: 24).copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.6,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        "Submit credentials for Parivahan automated verification.",
+                        "Submit driver credentials for account approval.",
                         textAlign: TextAlign.center,
                         style: AppTypography.body(colors.textSecondary, fontSize: 13.5),
                       ),
@@ -433,10 +406,9 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
                             const SizedBox(height: 22),
 
                             PrimaryButton(
-                              label: "Submit Pilot Application",
+                              label: "Submit Application",
                               onPressed: _handleDriverRegister,
                               isLoading: _isLoading,
-                              icon: Icons.check_circle_outline_rounded,
                             ),
                           ],
                         ),

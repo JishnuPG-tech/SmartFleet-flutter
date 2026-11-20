@@ -77,10 +77,10 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
 
       case AppCanvasTheme.midnightBlack:
         bg = const Color(0xFF000000);
-        surface = const Color(0xFF09090B);
-        surfaceAlt = const Color(0xFF18181B);
-        border = const Color(0xFF27272A);
-        text = const Color(0xFFFFFFFF);
+        surface = const Color(0xFF0D0E12);
+        surfaceAlt = const Color(0xFF14161D);
+        border = const Color(0xFF222328);
+        text = const Color(0xFFF4EDE2);
         textSecondary = const Color(0xFFA1A1AA);
         statusSuccessContainer = const Color(0xFF052E16);
         statusRunningContainer = const Color(0xFF082F49);

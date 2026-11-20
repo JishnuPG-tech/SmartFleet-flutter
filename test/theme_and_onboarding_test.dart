@@ -101,7 +101,7 @@ void main() {
 
       expect(find.text("Are you an Admin or a Driver?"), findsOneWidget);
       expect(find.text("Fleet Administrator"), findsOneWidget);
-      expect(find.text("Fleet Pilot / Driver"), findsOneWidget);
+      expect(find.text("Fleet Driver"), findsOneWidget);
     });
 
     testWidgets("OnboardingScreen displays 3 slides and controls", (tester) async {
@@ -110,16 +110,16 @@ void main() {
 
       expect(find.text("Skip"), findsOneWidget);
       expect(find.text("Continue"), findsOneWidget);
-      expect(find.text("Real-Time GPS Fleet Radar"), findsOneWidget);
+      expect(find.text("Continuous Fleet Tracking"), findsOneWidget);
     });
 
     testWidgets("AdminLoginScreen renders credentials form", (tester) async {
       await tester.pumpWidget(_buildTestWrapper(child: const AdminLoginScreen()));
       await tester.pumpAndSettle();
 
-      expect(find.text("Admin Sign In"), findsOneWidget);
+      expect(find.text("Admin Access"), findsOneWidget);
       expect(find.text("Fleet Administrator"), findsOneWidget);
-      expect(find.text("Enter Command Portal"), findsOneWidget);
+      expect(find.text("Sign In"), findsOneWidget);
     });
 
     testWidgets("DriverAuthScreen renders Sign In and Register tabs", (tester) async {
