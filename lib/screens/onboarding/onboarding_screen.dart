@@ -49,8 +49,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => RoleSelectScreen(onToggleLanguage: widget.onToggleLanguage),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+        pageBuilder: (_, animation, secondaryAnimation) => RoleSelectScreen(onToggleLanguage: widget.onToggleLanguage),
+        transitionsBuilder: (_, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
         transitionDuration: const Duration(milliseconds: 300),
       ),
     );

@@ -16,7 +16,6 @@ class RoleSelectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final l10n = AppLocalizations.of(context);
     final isMl = Localizations.localeOf(context).languageCode == "ml";
 
     return Scaffold(
