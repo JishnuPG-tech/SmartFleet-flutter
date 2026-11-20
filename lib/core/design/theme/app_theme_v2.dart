@@ -3,11 +3,24 @@ import "package:flutter/services.dart";
 import "../tokens/app_colors.dart";
 import "../tokens/app_typography.dart";
 import "../tokens/app_spacing.dart";
+import "theme_controller.dart";
 
 class AppThemeV2 {
-  static ThemeData buildTheme(Brightness brightness) {
+  static ThemeData buildTheme(Brightness brightness, {AppAccentPalette palette = AppAccentPalette.limeGreen}) {
     final isDark = brightness == Brightness.dark;
-    final colors = isDark ? AppColorsExtension.dark : AppColorsExtension.light;
+    AppColorsExtension colors;
+
+    switch (palette) {
+      case AppAccentPalette.skyBlue:
+        colors = isDark ? AppColorsExtension.darkSky : AppColorsExtension.lightSky;
+        break;
+      case AppAccentPalette.claudeOrange:
+        colors = isDark ? AppColorsExtension.darkClaude : AppColorsExtension.lightClaude;
+        break;
+      case AppAccentPalette.limeGreen:
+        colors = isDark ? AppColorsExtension.dark : AppColorsExtension.light;
+        break;
+    }
 
     return ThemeData(
       useMaterial3: true,

@@ -71,7 +71,7 @@ void main() {
           ),
         );
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 1600));
 
         expect(tester.takeException(), isNull);
       });
@@ -97,6 +97,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       });
 
       testWidgets('Admin Trips Tab (Search, Filters, Cards) - $desc', (tester) async {
@@ -115,6 +117,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       });
 
       testWidgets('Trip Detail Screen (Route, Vertical Timeline, WhatsApp) - $desc', (tester) async {
@@ -133,6 +137,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       });
 
       testWidgets('Create Trip Screen (4 Pickers & Confirmation) - $desc', (tester) async {
@@ -151,6 +157,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       });
 
       testWidgets('Admin Fleet Tab (Trucks & Statuses) - $desc', (tester) async {
@@ -169,6 +177,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       });
 
       testWidgets('Admin Drivers Tab (Directory & Direct Call) - $desc', (tester) async {
@@ -187,6 +197,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(milliseconds: 100));
       });
     }
   });

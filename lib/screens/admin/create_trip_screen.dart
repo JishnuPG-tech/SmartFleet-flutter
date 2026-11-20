@@ -6,6 +6,7 @@ import "../../core/design/components/buttons.dart";
 import "../../core/data/models/driver.dart";
 import "../../core/data/seed_data.dart";
 import "../../core/data/fleet_repository.dart";
+import "../../core/data/config_manager.dart";
 import "../../l10n/app_localizations.dart";
 
 class CreateTripScreen extends StatefulWidget {
@@ -32,20 +33,13 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
   String? _selectedDriverId;
   bool _isSubmitting = false;
 
-  static const List<String> _cargoOptions = [
-    "Industrial Steel Coils",
-    "Container Freight (Electronics & Spices)",
-    "Cement Sacks & TMT Steel Bars",
-    "Bulk Polymer Granules",
-    "Automotive Spare Parts",
-    "Food Grains & Rice Sacks",
-    "Timber & Wood Pulp",
-    "Petroleum & Chemical Drums",
-    "FMCG Packaged Goods",
-    "Construction Aggregates & Sand",
-    "Ceramic Tiles & Sanitaryware",
-    "Other / Custom Cargo...",
-  ];
+  List<String> get _cargoOptions {
+    final list = List<String>.from(ConfigManager.instance.cargos);
+    if (!list.contains("Other / Custom Cargo...")) {
+      list.add("Other / Custom Cargo...");
+    }
+    return list;
+  }
 
   static const List<Map<String, dynamic>> _weightOptions = [
     {"label": "5.0 Tons (Light Commercial)", "val": 5.0},

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/design/tokens/app_colors.dart';
 import '../../../core/design/tokens/app_typography.dart';
@@ -14,7 +13,9 @@ import '../../../core/maps/smart_fleet_map.dart';
 import '../../../core/maps/kerala_locations.dart';
 import '../../../core/maps/marker_interpolator.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/data/config_manager.dart';
 import '../delivery_proof_flow.dart';
+import '../live_tracking_screen.dart';
 
 class DriverTripTab extends StatelessWidget {
   final Driver? driver;
@@ -43,13 +44,16 @@ class DriverTripTab extends StatelessWidget {
   }
 
   Future<void> _callOffice(BuildContext context) async {
-    final uri = Uri.parse("tel:+914842889000");
+    final phone = ConfigManager.instance.emergencyContacts.officeDispatch.isNotEmpty
+        ? ConfigManager.instance.emergencyContacts.officeDispatch
+        : "+914842889000";
+    final uri = Uri.parse("tel:$phone");
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Calling fleet office: +91 484 288 9000")),
+          SnackBar(content: Text("Calling fleet office: $phone")),
         );
       }
     }
@@ -202,50 +206,88 @@ class DriverTripTab extends StatelessWidget {
               const SizedBox(height: 10),
             ],
 
-            // COMPACT ROUTE PREVIEW MAP
-            ClipRRect(
+            // COMPACT ROUTE PREVIEW MAP (Tap to open full Live Tracking HUD)
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => LiveTrackingScreen(trip: trip)),
+                );
+              },
               borderRadius: AppSpacing.cardBorderRadius,
-              child: Container(
-                height: 150,
-                decoration: BoxDecoration(
-                  borderRadius: AppSpacing.cardBorderRadius,
-                  border: Border.all(color: colors.border, width: 1.0),
-                ),
-                child: SmartFleetMap(
-                  center: truckPos,
-                  zoom: 9.5,
-                  interactive: false,
-                  polylines: [
-                    Polyline(
-                      points: [origin, dest],
-                      strokeWidth: 3.5,
-                      color: colors.brand,
-                      strokeCap: StrokeCap.round,
-                    ),
-                  ],
-                  markers: [
-                    SmartFleetMap.buildPinMarker(
-                      position: origin,
-                      icon: Icons.trip_origin_rounded,
-                      color: colors.textSecondary,
-                      label: trip.from,
-                      colors: colors,
-                    ),
-                    SmartFleetMap.buildPinMarker(
-                      position: dest,
-                      icon: Icons.flag_rounded,
-                      color: colors.statusSuccess,
-                      label: trip.to,
-                      colors: colors,
-                    ),
-                    SmartFleetMap.buildTruckMarker(
-                      position: truckPos,
-                      plateNumber: trip.truckPlate,
-                      status: TruckStatus.onTrip,
-                      colors: colors,
-                      heading: 335.0,
-                    ),
-                  ],
+              child: ClipRRect(
+                borderRadius: AppSpacing.cardBorderRadius,
+                child: Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    borderRadius: AppSpacing.cardBorderRadius,
+                    border: Border.all(color: colors.border, width: 1.0),
+                  ),
+                  child: Stack(
+                    children: [
+                      SmartFleetMap(
+                        center: truckPos,
+                        zoom: 9.5,
+                        interactive: false,
+                        polylines: [
+                          Polyline(
+                            points: [origin, dest],
+                            strokeWidth: 3.5,
+                            color: colors.brand,
+                            strokeCap: StrokeCap.round,
+                          ),
+                        ],
+                        markers: [
+                          SmartFleetMap.buildPinMarker(
+                            position: origin,
+                            icon: Icons.trip_origin_rounded,
+                            color: colors.textSecondary,
+                            label: trip.from,
+                            colors: colors,
+                          ),
+                          SmartFleetMap.buildPinMarker(
+                            position: dest,
+                            icon: Icons.flag_rounded,
+                            color: colors.statusSuccess,
+                            label: trip.to,
+                            colors: colors,
+                          ),
+                          SmartFleetMap.buildTruckMarker(
+                            position: truckPos,
+                            plateNumber: trip.truckPlate,
+                            status: TruckStatus.onTrip,
+                            colors: colors,
+                            heading: 335.0,
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        bottom: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: colors.surface.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: colors.border),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.fullscreen_rounded, size: 14, color: colors.brand),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Open Route HUD",
+                                style: AppTypography.supporting(colors.brand, fontSize: 11).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

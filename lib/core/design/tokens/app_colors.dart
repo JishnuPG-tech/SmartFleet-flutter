@@ -81,6 +81,88 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     statusDangerContainer: Color(0xFF2D0F0F),
   );
 
+  // SKY BLUE PALETTE
+  static const lightSky = AppColorsExtension(
+    bg: Color(0xFFFFFFFF),
+    surface: Color(0xFFF0F9FF),
+    surfaceAlt: Color(0xFFE0F2FE),
+    border: Color(0xFFBAE6FD),
+    text: Color(0xFF0F172A),
+    textSecondary: Color(0xFF475569),
+    brand: Color(0xFF0284C7),
+    onBrand: Color(0xFFFFFFFF),
+    accent: Color(0xFF38BDF8),
+    statusSuccess: Color(0xFF059669),
+    statusSuccessContainer: Color(0xFFD1FAE5),
+    statusRunning: Color(0xFF0284C7),
+    statusRunningContainer: Color(0xFFE0F2FE),
+    statusWaiting: Color(0xFFD97706),
+    statusWaitingContainer: Color(0xFFFEF3C7),
+    statusDanger: Color(0xFFDC2626),
+    statusDangerContainer: Color(0xFFFEE2E2),
+  );
+
+  static const darkSky = AppColorsExtension(
+    bg: Color(0xFF08090D),
+    surface: Color(0xFF11131B),
+    surfaceAlt: Color(0xFF171A23),
+    border: Color(0xFF1E293B),
+    text: Color(0xFFF8FAFC),
+    textSecondary: Color(0xFF94A3B8),
+    brand: Color(0xFF38BDF8),
+    onBrand: Color(0xFF08090D),
+    accent: Color(0xFF38BDF8),
+    statusSuccess: Color(0xFF34D399),
+    statusSuccessContainer: Color(0xFF064E3B),
+    statusRunning: Color(0xFF38BDF8),
+    statusRunningContainer: Color(0xFF0C4A6E),
+    statusWaiting: Color(0xFFFBBF24),
+    statusWaitingContainer: Color(0xFF78350F),
+    statusDanger: Color(0xFFF87171),
+    statusDangerContainer: Color(0xFF7F1D1D),
+  );
+
+  // CLAUDE ORANGE PALETTE
+  static const lightClaude = AppColorsExtension(
+    bg: Color(0xFFFAF9F6),
+    surface: Color(0xFFF4EDE2),
+    surfaceAlt: Color(0xFFEAE0D1),
+    border: Color(0xFFDECFC0),
+    text: Color(0xFF1F1A15),
+    textSecondary: Color(0xFF6B5E52),
+    brand: Color(0xFFC05621),
+    onBrand: Color(0xFFFFFFFF),
+    accent: Color(0xFFD97757),
+    statusSuccess: Color(0xFF2E7D32),
+    statusSuccessContainer: Color(0xFFE8F5E9),
+    statusRunning: Color(0xFFC05621),
+    statusRunningContainer: Color(0xFFFEEBC8),
+    statusWaiting: Color(0xFFB7791F),
+    statusWaitingContainer: Color(0xFFFEFCBF),
+    statusDanger: Color(0xFFC53030),
+    statusDangerContainer: Color(0xFFFED7D7),
+  );
+
+  static const darkClaude = AppColorsExtension(
+    bg: Color(0xFF171512),
+    surface: Color(0xFF24201B),
+    surfaceAlt: Color(0xFF2B261F),
+    border: Color(0xFF3D362C),
+    text: Color(0xFFF4EDE2),
+    textSecondary: Color(0xFFA99B8A),
+    brand: Color(0xFFF2BA93),
+    onBrand: Color(0xFF171512),
+    accent: Color(0xFFD97757),
+    statusSuccess: Color(0xFF81C784),
+    statusSuccessContainer: Color(0xFF1B5E20),
+    statusRunning: Color(0xFFF2BA93),
+    statusRunningContainer: Color(0xFF44261B),
+    statusWaiting: Color(0xFFFFD54F),
+    statusWaitingContainer: Color(0xFF4A3800),
+    statusDanger: Color(0xFFE57373),
+    statusDangerContainer: Color(0xFF4C1D1D),
+  );
+
   @override
   AppColorsExtension copyWith({
     Color? bg,

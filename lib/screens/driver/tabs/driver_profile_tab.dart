@@ -318,6 +318,7 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
+          flex: 2,
           child: Text(
             label,
             style: AppTypography.supporting(colors.textSecondary, fontSize: 13),
@@ -325,7 +326,15 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
           ),
         ),
         const SizedBox(width: 8),
-        Text(value, style: AppTypography.section(colors.text, fontSize: 14, isNumber: true)),
+        Flexible(
+          flex: 3,
+          child: Text(
+            value,
+            style: AppTypography.section(colors.text, fontSize: 14, isNumber: true),
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

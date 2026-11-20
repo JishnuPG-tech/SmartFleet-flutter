@@ -475,7 +475,7 @@ class ApiClient {
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/pod/$tripId/verify-otp'),
         headers: _headers,
-        body: jsonEncode({'otp_code': otp}),
+        body: jsonEncode({'otp': otp.trim(), 'otp_code': otp.trim()}),
       ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
@@ -501,7 +501,8 @@ class ApiClient {
         Uri.parse('$baseUrl/pod/$tripId/complete'),
       );
 
-      request.fields['otp_code'] = otp;
+      request.fields['otp'] = otp.trim();
+      request.fields['otp_code'] = otp.trim();
       request.fields['signature_svg'] = signatureSvg;
 
       if (photoPath.isNotEmpty && File(photoPath).existsSync()) {
@@ -515,6 +516,59 @@ class ApiClient {
     } catch (e) {
       return false;
     }
+  }
+
+  // 8. SEND HARDWARE GPS TELEMETRY PING
+  Future<bool> sendTelemetryPing({
+    required String truckPlate,
+    String? tripId,
+    required double latitude,
+    required double longitude,
+    required double heading,
+    required double speedKmh,
+    int? batteryLevel,
+  }) async {
+    try {
+      final payload = <String, dynamic>{
+        'truck_plate': truckPlate.trim(),
+        'latitude': latitude,
+        'longitude': longitude,
+        'heading': heading,
+        'speed_kmh': speedKmh,
+      };
+      if (tripId != null && tripId.isNotEmpty) {
+        payload['trip_id'] = tripId.trim();
+      }
+      if (batteryLevel != null) {
+        payload['battery_level'] = batteryLevel;
+      }
+      final body = jsonEncode(payload);
+
+      final response = await _httpClient.post(
+        Uri.parse('$baseUrl/telemetry/ping'),
+        headers: _headers,
+        body: body,
+      ).timeout(const Duration(seconds: 6));
+
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // 9. GET ZERO-REDEPLOY APP CMS CONFIG
+  Future<Map<String, dynamic>?> getAppConfig() async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/config/app'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return null;
   }
 
   TripStatus _parseTripStatus(String? statusStr) {

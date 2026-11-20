@@ -11,6 +11,7 @@ import "../../../core/data/models/trip.dart";
 import "../../../core/data/models/truck.dart";
 import "../../../core/data/models/driver.dart";
 import "../../../core/data/fleet_repository.dart";
+import "../../../core/data/config_manager.dart";
 import "../../../core/maps/smart_fleet_map.dart";
 import "../../../l10n/app_localizations.dart";
 
@@ -199,7 +200,43 @@ class _AdminHomeTabState extends State<AdminHomeTab> {
                                 ),
                               ),
 
-                              // ONE PRIMARY ACTION: Crisp Acid Lime Button
+                              // Real-time OTA Announcement Notice Banner
+                              if (ConfigManager.instance.noticeBanner != null && ConfigManager.instance.noticeBanner!.active) ...[
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colors.brand.withValues(alpha: 0.1),
+                                    borderRadius: AppSpacing.cardBorderRadius,
+                                    border: Border.all(color: colors.brand.withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.campaign_rounded, color: colors.brand, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              ConfigManager.instance.noticeBanner!.title,
+                                              style: AppTypography.title(colors.text, fontSize: 13),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              ConfigManager.instance.noticeBanner!.message,
+                                              style: AppTypography.supporting(colors.textSecondary, fontSize: 11),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+
+                              // ONE PRIMARY ACTION: Crisp Accent Button
                               PrimaryButton(
                                 label: l10n.btnNewTrip,
                                 icon: Icons.add_rounded,

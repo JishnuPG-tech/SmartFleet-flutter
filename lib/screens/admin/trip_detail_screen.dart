@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import '../../core/design/tokens/app_colors.dart';
 import '../../core/design/tokens/app_typography.dart';
 import '../../core/design/tokens/app_spacing.dart';
@@ -124,6 +123,14 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 case TripStatus.delivered:
                   statusType = ChipStatusType.success;
                   statusLabel = l10n.statusDelivered;
+                  break;
+                case TripStatus.breakdown:
+                  statusType = ChipStatusType.danger;
+                  statusLabel = "BREAKDOWN";
+                  break;
+                case TripStatus.failed:
+                  statusType = ChipStatusType.danger;
+                  statusLabel = "FAILED";
                   break;
               }
 

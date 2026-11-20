@@ -34,6 +34,15 @@ class AppTypography {
         isNumber: isNumber,
       );
 
+  // Tabular Numbers for Speedometer, Telemetry, and Counters
+  static TextStyle number(Color color, {double fontSize = 16, FontWeight fontWeight = FontWeight.w700}) =>
+      _baseStyle(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+        isNumber: true,
+      );
+
   // Screen Title: 24-28 sp (Bold)
   static TextStyle title(Color color, {double fontSize = 24, bool isMalayalam = false, bool isNumber = false}) =>
       _baseStyle(

@@ -1,14 +1,19 @@
+import "dart:async";
 import "package:flutter/material.dart";
 import "package:flutter_localizations/flutter_localizations.dart";
 import "core/design/theme/app_theme_v2.dart";
 import "core/design/theme/theme_controller.dart";
 import "core/data/fleet_repository.dart";
+import "core/data/config_manager.dart";
+import "core/data/fleet_websocket_service.dart";
 import "l10n/app_localizations.dart";
 import "screens/auth/role_select_screen.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await LocalFleetRepository.instance.getTrips();
+  unawaited(ConfigManager.instance.syncFromRemote());
+  FleetWebSocketService.instance.connect();
   runApp(const SmartFleetApp());
 }
 
@@ -36,8 +41,8 @@ class _SmartFleetAppState extends State<SmartFleetApp> {
         return MaterialApp(
           title: "SmartFleet",
           debugShowCheckedModeBanner: false,
-          theme: AppThemeV2.buildTheme(Brightness.light),
-          darkTheme: AppThemeV2.buildTheme(Brightness.dark),
+          theme: AppThemeV2.buildTheme(Brightness.light, palette: ThemeController.instance.palette),
+          darkTheme: AppThemeV2.buildTheme(Brightness.dark, palette: ThemeController.instance.palette),
           themeMode: ThemeController.instance.mode,
           locale: _locale,
           supportedLocales: const [

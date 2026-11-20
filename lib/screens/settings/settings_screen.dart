@@ -74,6 +74,45 @@ class SettingsScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
+              // 1B. ACCENT PALETTE PICKER (Lime Green, Sky Blue, Claude Orange)
+              Text("Accent Palette", style: AppTypography.section(colors.text, fontSize: 16)),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPaletteTile(
+                      context,
+                      label: "Lime Green",
+                      palette: AppAccentPalette.limeGreen,
+                      isSelected: ThemeController.instance.palette == AppAccentPalette.limeGreen,
+                      colorPreview: const Color(0xFFC6FF00),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildPaletteTile(
+                      context,
+                      label: "Sky Blue",
+                      palette: AppAccentPalette.skyBlue,
+                      isSelected: ThemeController.instance.palette == AppAccentPalette.skyBlue,
+                      colorPreview: const Color(0xFF38BDF8),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildPaletteTile(
+                      context,
+                      label: "Claude Orange",
+                      palette: AppAccentPalette.claudeOrange,
+                      isSelected: ThemeController.instance.palette == AppAccentPalette.claudeOrange,
+                      colorPreview: const Color(0xFFD97757),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
               // 2. LANGUAGE SWITCH
               Text(l10n.selectLanguage, style: AppTypography.section(colors.text, fontSize: 16)),
               const SizedBox(height: 10),
@@ -210,6 +249,59 @@ class SettingsScreen extends StatelessWidget {
               style: AppTypography.supporting(
                 isSelected ? colors.brand : colors.text,
                 fontSize: 12,
+              ).copyWith(
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaletteTile(
+    BuildContext context, {
+    required String label,
+    required AppAccentPalette palette,
+    required bool isSelected,
+    required Color colorPreview,
+  }) {
+    final colors = context.colors;
+
+    return InkWell(
+      onTap: () => ThemeController.instance.setPalette(palette),
+      borderRadius: AppSpacing.cardBorderRadius,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: AppSpacing.cardBorderRadius,
+          border: Border.all(
+            color: isSelected ? colorPreview : colors.border,
+            width: isSelected ? 2.0 : 1.0,
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: colorPreview,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white24, width: 1.0),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, size: 16, color: Color(0xFF08090D))
+                  : null,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AppTypography.supporting(
+                isSelected ? colorPreview : colors.text,
+                fontSize: 11,
               ).copyWith(
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),

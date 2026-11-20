@@ -112,6 +112,67 @@ class LocalFleetRepository implements FleetRepository {
     }
   }
 
+  Future<void> syncTripsFromRemote() async {
+    await _syncFromRemote();
+  }
+
+  Future<void> refresh() async {
+    await _syncFromRemote();
+  }
+
+  List<Driver> get currentDrivers => List.unmodifiable(_drivers);
+  List<Truck> get currentTrucks => List.unmodifiable(_trucks);
+  List<Trip> get currentTrips => List.unmodifiable(_trips);
+
+  Future<Truck> createTruck({
+    required String plate,
+    required String model,
+    required int capacityTons,
+    String assignedDriverId = "",
+  }) async {
+    final truck = Truck(
+      plate: plate,
+      model: model,
+      capacityTons: capacityTons,
+      assignedDriverId: assignedDriverId,
+      status: TruckStatus.available,
+      latitude: 9.9312,
+      longitude: 76.2673,
+      heading: 0.0,
+      lastSeen: DateTime.now(),
+    );
+    _trucks.add(truck);
+    _trucksController.add(List.unmodifiable(_trucks));
+    _saveToDisk();
+    return truck;
+  }
+
+  void handleTelemetryUpdate(Map<String, dynamic> packet) {
+    final plate = packet["truck_plate"] as String?;
+    final lat = (packet["latitude"] as num?)?.toDouble();
+    final lng = (packet["longitude"] as num?)?.toDouble();
+    final heading = (packet["heading"] as num?)?.toDouble() ?? 0.0;
+
+    if (plate == null || lat == null || lng == null) return;
+
+    final index = _trucks.indexWhere((t) => t.plate == plate);
+    if (index != -1) {
+      final old = _trucks[index];
+      _trucks[index] = Truck(
+        plate: old.plate,
+        model: old.model,
+        capacityTons: old.capacityTons,
+        assignedDriverId: old.assignedDriverId,
+        status: TruckStatus.onTrip,
+        latitude: lat,
+        longitude: lng,
+        heading: heading,
+        lastSeen: DateTime.now(),
+      );
+      _trucksController.add(List.unmodifiable(_trucks));
+    }
+  }
+
   File? _getStorageFile() {
     if (_storageDir == null) return null;
     return File('${_storageDir!.path}/smartfleet_db.json');
