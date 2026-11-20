@@ -1,5 +1,12 @@
 import "package:flutter/material.dart";
 
+enum AppCanvasTheme {
+  midnightBlack,
+  pureWhite,
+  claudeWarm,
+  claudeDeep,
+}
+
 enum AppAccentPalette {
   limeGreen,
   skyBlue,
@@ -10,15 +17,23 @@ class ThemeController extends ChangeNotifier {
   static final ThemeController instance = ThemeController._();
   ThemeController._();
 
-  ThemeMode _mode = ThemeMode.system;
-  ThemeMode get mode => _mode;
+  AppCanvasTheme _canvasTheme = AppCanvasTheme.midnightBlack;
+  AppCanvasTheme get canvasTheme => _canvasTheme;
 
   AppAccentPalette _palette = AppAccentPalette.limeGreen;
   AppAccentPalette get palette => _palette;
 
-  void setThemeMode(ThemeMode newMode) {
-    if (_mode == newMode) return;
-    _mode = newMode;
+  bool _hasCompletedOnboarding = false;
+  bool get hasCompletedOnboarding => _hasCompletedOnboarding;
+
+  ThemeMode get mode {
+    if (_canvasTheme == AppCanvasTheme.pureWhite) return ThemeMode.light;
+    return ThemeMode.dark;
+  }
+
+  void setCanvasTheme(AppCanvasTheme newCanvas) {
+    if (_canvasTheme == newCanvas) return;
+    _canvasTheme = newCanvas;
     notifyListeners();
   }
 
@@ -28,9 +43,18 @@ class ThemeController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void completeOnboarding() {
+    if (_hasCompletedOnboarding) return;
+    _hasCompletedOnboarding = true;
+    notifyListeners();
+  }
+
+  void resetOnboarding() {
+    _hasCompletedOnboarding = false;
+    notifyListeners();
+  }
+
   bool isDark(BuildContext context) {
-    if (_mode == ThemeMode.dark) return true;
-    if (_mode == ThemeMode.light) return false;
-    return MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    return _canvasTheme != AppCanvasTheme.pureWhite;
   }
 }

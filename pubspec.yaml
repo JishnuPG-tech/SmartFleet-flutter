@@ -1,7 +1,7 @@
 name: smartfleet_flutter
 description: "SmartFleet 2.0 - High Contrast Fleet Logistics for Kerala"
 publish_to: 'none'
-version: 2.0.0+1
+version: 2.8.0+11
 
 environment:
   sdk: ^3.14.0

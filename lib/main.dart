@@ -7,7 +7,7 @@ import "core/data/fleet_repository.dart";
 import "core/data/config_manager.dart";
 import "core/data/fleet_websocket_service.dart";
 import "l10n/app_localizations.dart";
-import "screens/auth/role_select_screen.dart";
+import "screens/splash/splash_screen.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,8 +41,16 @@ class _SmartFleetAppState extends State<SmartFleetApp> {
         return MaterialApp(
           title: "SmartFleet",
           debugShowCheckedModeBanner: false,
-          theme: AppThemeV2.buildTheme(Brightness.light, palette: ThemeController.instance.palette),
-          darkTheme: AppThemeV2.buildTheme(Brightness.dark, palette: ThemeController.instance.palette),
+          theme: AppThemeV2.buildTheme(
+            Brightness.light,
+            canvas: ThemeController.instance.canvasTheme,
+            palette: ThemeController.instance.palette,
+          ),
+          darkTheme: AppThemeV2.buildTheme(
+            Brightness.dark,
+            canvas: ThemeController.instance.canvasTheme,
+            palette: ThemeController.instance.palette,
+          ),
           themeMode: ThemeController.instance.mode,
           locale: _locale,
           supportedLocales: const [
@@ -55,7 +63,7 @@ class _SmartFleetAppState extends State<SmartFleetApp> {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: RoleSelectScreen(onToggleLanguage: _toggleLanguage),
+          home: SplashScreen(onToggleLanguage: _toggleLanguage),
         );
       },
     );

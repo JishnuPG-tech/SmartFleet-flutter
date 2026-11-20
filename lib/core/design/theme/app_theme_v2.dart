@@ -6,28 +6,29 @@ import "../tokens/app_spacing.dart";
 import "theme_controller.dart";
 
 class AppThemeV2 {
-  static ThemeData buildTheme(Brightness brightness, {AppAccentPalette palette = AppAccentPalette.limeGreen}) {
-    final isDark = brightness == Brightness.dark;
-    AppColorsExtension colors;
+  static ThemeData buildTheme(
+    Brightness brightness, {
+    AppCanvasTheme? canvas,
+    AppAccentPalette palette = AppAccentPalette.limeGreen,
+  }) {
+    // If canvas is explicitly supplied, use it; otherwise deduce from brightness
+    final effectiveCanvas = canvas ??
+        (brightness == Brightness.light ? AppCanvasTheme.pureWhite : AppCanvasTheme.midnightBlack);
 
-    switch (palette) {
-      case AppAccentPalette.skyBlue:
-        colors = isDark ? AppColorsExtension.darkSky : AppColorsExtension.lightSky;
-        break;
-      case AppAccentPalette.claudeOrange:
-        colors = isDark ? AppColorsExtension.darkClaude : AppColorsExtension.lightClaude;
-        break;
-      case AppAccentPalette.limeGreen:
-        colors = isDark ? AppColorsExtension.dark : AppColorsExtension.light;
-        break;
-    }
+    final colors = AppColorsExtension.resolve(
+      canvas: effectiveCanvas,
+      accent: palette,
+    );
+
+    final isDark = effectiveCanvas != AppCanvasTheme.pureWhite;
+    final resolvedBrightness = isDark ? Brightness.dark : Brightness.light;
 
     return ThemeData(
       useMaterial3: true,
-      brightness: brightness,
+      brightness: resolvedBrightness,
       scaffoldBackgroundColor: colors.bg,
       colorScheme: ColorScheme(
-        brightness: brightness,
+        brightness: resolvedBrightness,
         primary: colors.brand,
         onPrimary: colors.onBrand,
         secondary: colors.brand,

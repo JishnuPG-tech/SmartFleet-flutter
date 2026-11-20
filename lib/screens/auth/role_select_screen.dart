@@ -1,452 +1,242 @@
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 import "../../core/design/tokens/app_colors.dart";
 import "../../core/design/tokens/app_typography.dart";
-import "../../core/design/components/buttons.dart";
-import "../../core/data/api_client.dart";
-import "../../core/data/fleet_repository.dart";
-import "../../core/data/seed_data.dart";
+import "../../core/design/components/smartfleet_logo.dart";
 import "../../l10n/app_localizations.dart";
-import "../admin/admin_main_screen.dart";
-import "../driver/driver_main_screen.dart";
-import "driver_register_screen.dart";
+import "../settings/settings_screen.dart";
+import "admin_login_screen.dart";
+import "driver_auth_screen.dart";
 
-class RoleSelectScreen extends StatefulWidget {
+class RoleSelectScreen extends StatelessWidget {
   final VoidCallback? onToggleLanguage;
-  final Locale? currentLocale;
-  final ValueChanged<Locale>? onLocaleChanged;
 
-  const RoleSelectScreen({
-    super.key,
-    this.onToggleLanguage,
-    this.currentLocale,
-    this.onLocaleChanged,
-  });
-
-  @override
-  State<RoleSelectScreen> createState() => _RoleSelectScreenState();
-}
-
-class _RoleSelectScreenState extends State<RoleSelectScreen> {
-  int _selectedRoleIndex = 0; // 0 = Driver, 1 = Admin
-
-  // Driver Controllers
-  final _driverPhoneController = TextEditingController(text: "+91 94471 23456");
-  final _driverPasswordController = TextEditingController(text: "pilot1234");
-
-  // Admin Controllers
-  final _adminUsernameController = TextEditingController(text: "admin");
-  final _adminPasswordController = TextEditingController(text: "SmartFleet@2026");
-
-  bool _isLoading = false;
-  String? _errorMessage;
-
-  @override
-  void dispose() {
-    _driverPhoneController.dispose();
-    _driverPasswordController.dispose();
-    _adminUsernameController.dispose();
-    _adminPasswordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleDriverLogin() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final phone = _driverPhoneController.text.trim();
-    final password = _driverPasswordController.text.trim();
-
-    if (phone.isEmpty || password.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = "Please enter both phone number and PIN.";
-      });
-      return;
-    }
-
-    final result = await ApiClient.instance.driverLogin(phone: phone, password: password);
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result.isSuccess) {
-      final driver = result.driver ?? SeedData.drivers.first;
-      LocalFleetRepository.instance.addOrUpdateDriver(driver);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DriverMainScreen(
-            driver: driver,
-            onToggleLanguage: widget.onToggleLanguage,
-          ),
-        ),
-      );
-    } else {
-      final matchedDriver = SeedData.drivers.firstWhere(
-        (d) => d.phone.replaceAll(RegExp(r'[^0-9]'), '').endsWith(phone.replaceAll(RegExp(r'[^0-9]'), '')),
-        orElse: () => SeedData.drivers.first,
-      );
-
-      if (phone.contains('94471') || phone.contains('98462') || phone.contains('97453')) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DriverMainScreen(
-              driver: matchedDriver,
-              onToggleLanguage: widget.onToggleLanguage,
-            ),
-          ),
-        );
-      } else {
-        setState(() => _errorMessage = result.errorMessage ?? "Invalid phone or PIN");
-      }
-    }
-  }
-
-  Future<void> _handleAdminLogin() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final username = _adminUsernameController.text.trim();
-    final password = _adminPasswordController.text.trim();
-
-    if (username.isEmpty || password.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = "Please enter both admin username and password.";
-      });
-      return;
-    }
-
-    final result = await ApiClient.instance.adminLogin(username: username, password: password);
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result.isSuccess) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => AdminMainScreen(onToggleLanguage: widget.onToggleLanguage),
-        ),
-      );
-    } else {
-      setState(() => _errorMessage = result.errorMessage ?? "Invalid admin credentials");
-    }
-  }
+  const RoleSelectScreen({super.key, this.onToggleLanguage});
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final isMalayalam = Localizations.localeOf(context).languageCode == "ml";
+    final isMl = Localizations.localeOf(context).languageCode == "ml";
 
     return Scaffold(
       backgroundColor: colors.bg,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: colors.bg,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          if (widget.onToggleLanguage != null)
-            TextButton.icon(
-              onPressed: widget.onToggleLanguage,
-              icon: Icon(Icons.language_rounded, size: 20, color: colors.brand),
-              label: Text(
-                isMalayalam ? "English" : "മലയാളം",
-                style: AppTypography.label(colors.brand),
-              ),
+          // Language Switcher Chip
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
+            icon: Icon(Icons.language_rounded, size: 18, color: colors.textSecondary),
+            label: Text(
+              isMl ? "മലയാളം" : "English",
+              style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              onToggleLanguage?.call();
+            },
+          ),
+          // Settings Gear
+          IconButton(
+            icon: Icon(Icons.settings_outlined, color: colors.textSecondary, size: 22),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SettingsScreen(onToggleLanguage: onToggleLanguage)),
+              );
+            },
+          ),
           const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // LOGO & HEADER
-              Center(
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: colors.brand.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Centered Vector Logo
+                  const Center(
+                    child: SmartFleetLogo(size: 72),
                   ),
-                  child: Icon(Icons.local_shipping_rounded, size: 32, color: colors.brand),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                l10n.appTitle,
-                style: AppTypography.title(colors.text, fontSize: 26),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                isMalayalam ? "കേരള ചരക്കുനീക്ക ഫ്ലീറ്റ് പോർട്ടൽ" : "Kerala Commercial Freight Portal",
-                style: AppTypography.supporting(colors.textSecondary, fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-              // ROLE SEGMENTED SWITCHER
+                  // Centered Title
+                  Text(
+                    "Are you an Admin or a Driver?",
+                    textAlign: TextAlign.center,
+                    style: AppTypography.title(colors.text, fontSize: 24).copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Centered Subtitle
+                  Text(
+                    "Select your role to access fleet operations or cockpit telematics.",
+                    textAlign: TextAlign.center,
+                    style: AppTypography.body(colors.textSecondary, fontSize: 14),
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  // 1. FLEET ADMINISTRATOR CARD
+                  _buildRoleCard(
+                    context,
+                    tag: "COMMAND PORTAL",
+                    title: "Fleet Administrator",
+                    description: "Manage trucks, assign routes, monitor live GPS radar, and configure CMS parameters.",
+                    icon: Icons.shield_outlined,
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdminLoginScreen(onToggleLanguage: onToggleLanguage),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 2. FLEET PILOT / DRIVER CARD
+                  _buildRoleCard(
+                    context,
+                    tag: "MOBILE COCKPIT",
+                    title: "Fleet Pilot / Driver",
+                    description: "Access assigned trip manifests, continuous navigation cockpit HUD, and complete POD deliveries.",
+                    icon: Icons.local_shipping_outlined,
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DriverAuthScreen(onToggleLanguage: onToggleLanguage),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  // Minimal footer
+                  Center(
+                    child: Text(
+                      "Kerala Corridor Fleet Logistics • Encrypted Session",
+                      style: AppTypography.mono(colors.textSecondary, fontSize: 10.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleCard(
+    BuildContext context, {
+    required String tag,
+    required String title,
+    required String description,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final colors = context.colors;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        splashColor: colors.brand.withValues(alpha: 0.1),
+        highlightColor: colors.brand.withValues(alpha: 0.05),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border, width: 1.2),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon Container
               Container(
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: colors.surface,
+                  color: colors.bg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colors.border, width: 1.0),
+                  border: Border.all(color: colors.brand.withValues(alpha: 0.35), width: 1.0),
                 ),
-                padding: const EdgeInsets.all(4),
-                child: Row(
+                child: Icon(icon, color: colors.brand, size: 24),
+              ),
+
+              const SizedBox(width: 16),
+
+              // Title and Description
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() {
-                          _selectedRoleIndex = 0;
-                          _errorMessage = null;
-                        }),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: _selectedRoleIndex == 0 ? colors.brand : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Text(
-                              isMalayalam ? "ഡ്രൈവർ" : "Driver Pilot",
-                              style: AppTypography.button(
-                                _selectedRoleIndex == 0 ? colors.onBrand : colors.textSecondary,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: colors.brand.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        tag,
+                        style: AppTypography.mono(colors.brand, fontSize: 9.5).copyWith(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() {
-                          _selectedRoleIndex = 1;
-                          _errorMessage = null;
-                        }),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: _selectedRoleIndex == 1 ? colors.brand : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Text(
-                              isMalayalam ? "ഫ്ലീറ്റ് ഓണർ" : "Fleet Owner",
-                              style: AppTypography.button(
-                                _selectedRoleIndex == 1 ? colors.onBrand : colors.textSecondary,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ),
+                    const SizedBox(height: 6),
+                    Text(
+                      title,
+                      style: AppTypography.title(colors.text, fontSize: 17).copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: AppTypography.body(colors.textSecondary, fontSize: 12.5).copyWith(
+                        height: 1.35,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(width: 8),
 
-              // ERROR MESSAGE BANNER
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colors.statusDanger.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: colors.statusDanger, width: 1.0),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline_rounded, color: colors.statusDanger, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: AppTypography.supporting(colors.statusDanger, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // DYNAMIC FORM CONTENT
-              if (_selectedRoleIndex == 0)
-                _buildDriverLoginForm(context, colors, isMalayalam)
-              else
-                _buildAdminLoginForm(context, colors, isMalayalam),
+              // Arrow
+              Padding(
+                padding: const EdgeInsets.only(top: 14.0),
+                child: Icon(Icons.arrow_forward_ios_rounded, color: colors.textSecondary, size: 16),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDriverLoginForm(BuildContext context, AppColorsExtension colors, bool isMalayalam) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildTextField(
-          context: context,
-          label: isMalayalam ? "രജിസ്റ്റർ ചെയ്ത മൊബൈൽ" : "REGISTERED MOBILE NUMBER",
-          controller: _driverPhoneController,
-          icon: Icons.phone_android_rounded,
-          keyboardType: TextInputType.phone,
-        ),
-        const SizedBox(height: 14),
-        _buildTextField(
-          context: context,
-          label: isMalayalam ? "പിൻ / പാസ്‌വേഡ്" : "SECURITY PIN / PASSWORD",
-          controller: _driverPasswordController,
-          icon: Icons.lock_outline_rounded,
-          obscureText: true,
-        ),
-        const SizedBox(height: 22),
-        PrimaryButton(
-          label: isMalayalam ? "ഡ്രൈവർ ലോഗിൻ" : "DRIVER LOGIN",
-          icon: Icons.login_rounded,
-          isLoading: _isLoading,
-          onPressed: _handleDriverLogin,
-        ),
-        const SizedBox(height: 14),
-        SecondaryButton(
-          label: isMalayalam ? "പുതിയ ഡ്രൈവർ രജിസ്ട്രേഷൻ" : "NEW DRIVER? REGISTER VEHICLE & LICENCE",
-          icon: Icons.person_add_rounded,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => DriverRegisterScreen(onToggleLanguage: widget.onToggleLanguage),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 18),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8,
-          children: [
-            ActionChip(
-              backgroundColor: colors.surface,
-              side: BorderSide(color: colors.border),
-              label: Text(
-                "Test Pilot Shafi (+91 94471 23456)",
-                style: AppTypography.supporting(colors.textSecondary, fontSize: 12),
-              ),
-              onPressed: () {
-                setState(() {
-                  _driverPhoneController.text = "+91 94471 23456";
-                  _driverPasswordController.text = "pilot1234";
-                });
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAdminLoginForm(BuildContext context, AppColorsExtension colors, bool isMalayalam) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildTextField(
-          context: context,
-          label: isMalayalam ? "യൂസർനെയിം" : "ADMIN USERNAME",
-          controller: _adminUsernameController,
-          icon: Icons.account_circle_outlined,
-        ),
-        const SizedBox(height: 14),
-        _buildTextField(
-          context: context,
-          label: isMalayalam ? "പാസ്‌വേഡ്" : "ADMIN PASSWORD",
-          controller: _adminPasswordController,
-          icon: Icons.lock_outline_rounded,
-          obscureText: true,
-        ),
-        const SizedBox(height: 22),
-        PrimaryButton(
-          label: isMalayalam ? "ഫ്ലീറ്റ് മാനേജർ ലോഗിൻ" : "LOGIN AS FLEET MANAGER",
-          icon: Icons.admin_panel_settings_rounded,
-          isLoading: _isLoading,
-          onPressed: _handleAdminLogin,
-        ),
-        const SizedBox(height: 18),
-        Center(
-          child: Text(
-            "Verified via Hugging Face Space & Supabase Backend",
-            style: AppTypography.supporting(colors.textSecondary, fontSize: 12),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField({
-    required BuildContext context,
-    required String label,
-    required TextEditingController controller,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-  }) {
-    final colors = context.colors;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTypography.label(colors.textSecondary, fontSize: 11),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: colors.border, width: 1.0),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: colors.textSecondary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  obscureText: obscureText,
-                  keyboardType: keyboardType,
-                  style: AppTypography.body(colors.text, fontSize: 15),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
