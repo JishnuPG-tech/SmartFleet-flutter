@@ -28,6 +28,7 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
   // Registration Controllers
   final _regNameController = TextEditingController();
   final _regPhoneController = TextEditingController();
+  final _regPinController = TextEditingController(text: "pilot1234");
   final _regLicenseController = TextEditingController();
   final _regVehicleTypeController = TextEditingController(text: "16-Wheeler Multi-Axle");
   final _regExpController = TextEditingController(text: "5");
@@ -49,6 +50,7 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
     _pinController.dispose();
     _regNameController.dispose();
     _regPhoneController.dispose();
+    _regPinController.dispose();
     _regLicenseController.dispose();
     _regVehicleTypeController.dispose();
     _regExpController.dispose();
@@ -140,11 +142,12 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
 
     try {
       final res = await ApiClient.instance.driverRegister(
-        name: name,
+        fullName: name,
         phone: phone,
+        password: _regPinController.text.trim().isNotEmpty ? _regPinController.text.trim() : "pilot1234",
         licenseNumber: license,
-        vehicleType: _regVehicleTypeController.text.trim(),
         experienceYears: int.tryParse(_regExpController.text.trim()) ?? 3,
+        assignedTruckPlate: _regVehicleTypeController.text.trim().isNotEmpty ? _regVehicleTypeController.text.trim() : null,
       );
 
       if (!mounted) return;
@@ -394,6 +397,17 @@ class _DriverAuthScreenState extends State<DriverAuthScreen> with SingleTickerPr
                               keyboardType: TextInputType.phone,
                               style: TextStyle(color: colors.text, fontSize: 14),
                               decoration: _inputDecoration(colors, "+91 98462 78901", Icons.phone_android_rounded),
+                            ),
+
+                            const SizedBox(height: 14),
+
+                            Text("Pilot Security PIN", style: AppTypography.caption(colors.text).copyWith(fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _regPinController,
+                              obscureText: true,
+                              style: TextStyle(color: colors.text, fontSize: 14),
+                              decoration: _inputDecoration(colors, "••••", Icons.lock_outline_rounded),
                             ),
 
                             const SizedBox(height: 14),

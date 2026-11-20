@@ -37,6 +37,22 @@ class ThemeController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setThemeMode(ThemeMode mode) {
+    if (mode == ThemeMode.light) {
+      setCanvasTheme(AppCanvasTheme.pureWhite);
+    } else {
+      setCanvasTheme(AppCanvasTheme.midnightBlack);
+    }
+  }
+
+  void toggleTheme() {
+    if (_canvasTheme == AppCanvasTheme.pureWhite) {
+      setCanvasTheme(AppCanvasTheme.midnightBlack);
+    } else {
+      setCanvasTheme(AppCanvasTheme.pureWhite);
+    }
+  }
+
   void setPalette(AppAccentPalette newPalette) {
     if (_palette == newPalette) return;
     _palette = newPalette;

@@ -9,7 +9,6 @@ import "package:smartfleet_flutter/screens/auth/role_select_screen.dart";
 import "package:smartfleet_flutter/screens/auth/admin_login_screen.dart";
 import "package:smartfleet_flutter/screens/auth/driver_auth_screen.dart";
 import "package:smartfleet_flutter/screens/onboarding/onboarding_screen.dart";
-import "package:smartfleet_flutter/screens/splash/splash_screen.dart";
 
 Widget _buildTestWrapper({required Widget child}) {
   return AnimatedBuilder(

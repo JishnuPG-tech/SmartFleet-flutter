@@ -1,9 +1,7 @@
-import "../../core/data/api_client.dart";
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "../../core/design/tokens/app_colors.dart";
 import "../../core/design/tokens/app_typography.dart";
-import "../../core/design/tokens/app_spacing.dart";
 import "../../core/design/theme/theme_controller.dart";
 import "../../core/services/update_service.dart";
 import "../../l10n/app_localizations.dart";
@@ -154,7 +152,7 @@ class SettingsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.Border.all(color: colors.border, width: 1.0),
+                  border: Border.all(color: colors.border, width: 1.0),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +223,7 @@ class SettingsScreen extends StatelessWidget {
                   border: Border.all(color: colors.border, width: 1.0),
                 ),
                 child: ListTile(
-                  title: Text(l10n.languageName, style: AppTypography.body(colors.text)),
+                  title: Text(l10n.selectLanguage, style: AppTypography.body(colors.text)),
                   subtitle: Text(
                     Localizations.localeOf(context).languageCode == "ml" ? "മലയാളം (സജീവമാണ്)" : "English (Active)",
                     style: AppTypography.caption(colors.textSecondary),

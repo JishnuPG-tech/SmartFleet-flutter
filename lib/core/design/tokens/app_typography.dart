@@ -115,4 +115,25 @@ class AppTypography {
         height: 1.25,
         isMalayalam: isMalayalam,
       );
+
+  // Caption: 12-13 sp (Regular / Medium)
+  static TextStyle caption(Color color, {double fontSize = 12, bool isMalayalam = false, bool isNumber = false}) =>
+      _baseStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w400,
+        color: color,
+        height: 1.3,
+        isMalayalam: isMalayalam,
+        isNumber: isNumber,
+      );
+
+  // Monospace / Code / Hashes / Telemetry: 12-13 sp
+  static TextStyle mono(Color color, {double fontSize = 12, FontWeight fontWeight = FontWeight.w400}) =>
+      TextStyle(
+        fontFamily: "monospace",
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      );
 }

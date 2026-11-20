@@ -52,10 +52,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, animation, __) => hasSeen
+          pageBuilder: (_, animation, secondaryAnimation) => hasSeen
               ? RoleSelectScreen(onToggleLanguage: widget.onToggleLanguage)
               : OnboardingScreen(onToggleLanguage: widget.onToggleLanguage),
-          transitionsBuilder: (_, animation, __, child) {
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
           transitionDuration: const Duration(milliseconds: 350),

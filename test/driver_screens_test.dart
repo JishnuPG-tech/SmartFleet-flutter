@@ -77,7 +77,7 @@ void main() {
         final key = GlobalKey();
         await tester.pumpWidget(
           _buildTestApp(
-            child: RoleSelectScreen(currentLocale: loc, onLocaleChanged: (_) {}),
+            child: RoleSelectScreen(onToggleLanguage: () {}),
             locale: loc,
             textScale: scale,
             repaintKey: key,
