@@ -1,5 +1,167 @@
 package com.smartfleet.app.smartfleet_flutter
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterActivity() {
+    private val CHANNEL = "com.smartfleet.app/installer"
+    private val REQUEST_INSTALL_PERMISSION = 8801
+    private val PREFS_NAME = "smartfleet_ota_prefs"
+    private val KEY_PENDING_APK = "pending_apk_path"
+
+    private var methodChannel: MethodChannel? = null
+
+    private fun savePendingApk(path: String?) {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_PENDING_APK, path).apply()
+    }
+
+    private fun getPendingApk(): String? {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_PENDING_APK, null)
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        methodChannel = channel
+
+        channel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "installApk" -> {
+                    val filePath = call.argument<String>("filePath")
+                    if (filePath.isNullOrEmpty()) {
+                        result.error("INVALID_PATH", "File path is null or empty", null)
+                        return@setMethodCallHandler
+                    }
+                    val file = File(filePath)
+                    if (!file.exists()) {
+                        result.error("FILE_NOT_FOUND", "APK file does not exist at $filePath", null)
+                        return@setMethodCallHandler
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        if (!packageManager.canRequestPackageInstalls()) {
+                            savePendingApk(filePath)
+                            val manageIntent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                                data = Uri.parse("package:$packageName")
+                            }
+                            startActivityForResult(manageIntent, REQUEST_INSTALL_PERMISSION)
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                    }
+
+                    val launched = launchInstaller(file)
+                    result.success(launched)
+                }
+                "canRequestPackageInstalls" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        result.success(packageManager.canRequestPackageInstalls())
+                    } else {
+                        result.success(true)
+                    }
+                }
+                "getAppVersion" -> {
+                    try {
+                        val pInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            packageManager.getPackageInfo(packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))
+                        } else {
+                            @Suppress("DEPRECATION")
+                            packageManager.getPackageInfo(packageName, 0)
+                        }
+                        val vCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            pInfo.longVersionCode.toInt()
+                        } else {
+                            @Suppress("DEPRECATION")
+                            pInfo.versionCode
+                        }
+                        val vName = pInfo.versionName ?: "2.7.0"
+                        result.success(mapOf(
+                            "versionCode" to vCode,
+                            "versionName" to vName
+                        ))
+                    } catch (e: Exception) {
+                        result.error("VERSION_ERROR", e.message, null)
+                    }
+                }
+                "openInstallPermissionSettings" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val manageIntent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                            data = Uri.parse("package:$packageName")
+                        }
+                        startActivityForResult(manageIntent, REQUEST_INSTALL_PERMISSION)
+                        result.success(true)
+                    } else {
+                        result.success(true)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    private fun launchInstaller(file: File): Boolean {
+        return try {
+            val authority = applicationContext.packageName + ".fileprovider"
+            val apkUri: Uri = FileProvider.getUriForFile(context, authority, file)
+
+            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(apkUri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.grantUriPermission("com.google.android.packageinstaller", apkUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            context.grantUriPermission("com.android.packageinstaller", apkUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+            startActivity(installIntent)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkAndResumePendingInstall()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_INSTALL_PERMISSION) {
+            checkAndResumePendingInstall()
+        }
+    }
+
+    private fun checkAndResumePendingInstall() {
+        val path = getPendingApk() ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (packageManager.canRequestPackageInstalls()) {
+                savePendingApk(null)
+                val file = File(path)
+                if (file.exists()) {
+                    launchInstaller(file)
+                    methodChannel?.invokeMethod("onInstallResumed", mapOf("success" to true))
+                }
+            }
+        } else {
+            savePendingApk(null)
+            val file = File(path)
+            if (file.exists()) {
+                launchInstaller(file)
+                methodChannel?.invokeMethod("onInstallResumed", mapOf("success" to true))
+            }
+        }
+    }
+}

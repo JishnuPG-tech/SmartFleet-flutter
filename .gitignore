@@ -2,6 +2,7 @@
 build/
 .gradle/
 *.apk
+!apk/*.apk
 .flutter-plugins
 .flutter-plugins-dependencies
 *.log
