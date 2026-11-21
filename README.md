@@ -1,107 +1,107 @@
-# SmartFleet (സ്മാർട്ട്ഫ്ലീറ്റ്)
+# SmartFleet (സ്മാർട്ട്ഫ്ലീറ്റ്) - Flutter Android Client
 
-> **Move Smart. Manage Better.**  
-> A senior-friendly, high-contrast fleet operations and driver logistics application built with Flutter for Android.
+> **Enterprise Commercial Logistics, Dispatch & Fleet Operations Platform**  
+> Senior-friendly, high-contrast Flutter Android application designed for heavy commercial fleet operations across Kerala and South India.
 
----
-
-## 🌟 Overview
-
-SmartFleet is engineered specifically for truck drivers and fleet owners in Kerala. Unlike traditional enterprise logistics dashboards that crowd phone screens with dense data and desktop paradigms, SmartFleet is designed around a single benchmark:
-
-> *"Can a 60-year-old driver wearing reading glasses, inside a truck cabin in direct sunlight, use this with zero explanation?"*
+[![GitHub Release](https://img.shields.io/github/v/release/JishnuPG-tech/SmartFleet-flutter?style=flat-square&color=0B6B3A)](https://github.com/JishnuPG-tech/SmartFleet-flutter/releases)
+[![Backend Repository](https://img.shields.io/badge/Backend-SmartFleet--Backend-blue?style=flat-square)](https://github.com/JishnuPG-tech/SmartFleet-Backend)
+[![Flutter Version](https://img.shields.io/badge/Flutter-3.x%20%7C%20Dart%203.x-02569B?style=flat-square)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20(ARM64%2C%20ARMv7%2C%20x86__64)-3DDC84?style=flat-square)](https://android.com)
 
 ---
 
-## 🚀 Key Features
+## Direct APK Downloads
 
-### 🚚 Driver Experience
-- **One Active Task Focus**: Eliminates cognitive overload by highlighting only the current active trip, next destination milestone, and essential ETA/distance.
-- **Single-Tap Navigation**: One-touch "Show route in Google Maps" integration.
-- **Physical Safety Actions**: Dedicated, unmissable stacked $\ge 56\text{dp}$ buttons for **"Call Office"** and **"Help / Breakdown"**.
-- **Delivery Proof Flow**:
-  - Secure 4-digit OTP verification.
-  - Camera/gallery parcel photo proof with preview.
-  - Interactive finger signature capture pad.
-- **Earnings & Bata History**: Clear trip-by-trip breakdown of base fare, driver bata, deductions, and payout status.
-- **Profile & Language Switch**: One-tap toggle between **മലയാളം** (Malayalam) and **English**.
-
-### 🏢 Fleet Admin / Owner Experience
-- **Morning/Evening Fleet Overview**: Time-derived Malayalam/English greetings with big KPI metric cards:
-  - 🟢 **Active Trips**
-  - ⚪ **Available Trucks**
-  - 🔵 **Delivered Today**
-- **Actionable Attention Alert**: Instant banner when delayed trips or breakdowns require immediate office dispatch.
-- **Quick Trip Dispatch Form**:
-  - 4 verified pickers: Driver selection, Truck registration, Route corridor, Cargo category & tonnage.
-  - Explicit confirmation modal before dispatch.
-- **Live Trips Directory**: Real-time progress indicators, search bar, and status filtering (`All`, `Running`, `Waiting`, `Done`).
-- **Detailed Route Timeline**: Vertical milestone cards with driver contact shortcuts and WhatsApp trip sharing.
-- **Truck & Driver Directories**: Complete roster with registration badges, license validity checks, and direct call shortcuts.
+| Release | Version | Build | Architecture | Download Link | SHA-256 Checksum |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Latest Production** | `v2.6.1` | `8` | Universal ARM64/ARMv7 | [Download APK (GitHub Release)](https://github.com/JishnuPG-tech/SmartFleet-flutter/releases/download/v2.6.1/SmartFleet-v2.6.1-release.apk) | `4d0dc6618dc3a4c98d3421a5bbc1a9201a9c2974895706cb89b10220b5c03254` |
+| **In-Repo Mirror** | `v2.6.1` | `8` | Universal Android | [View in Repository](./apk/SmartFleet-v2.6.1-release.apk) | `4d0dc6618dc3a4c98d3421a5bbc1a9201a9c2974895706cb89b10220b5c03254` |
 
 ---
 
-## 🎨 Accessibility & Design Tokens
+## Key Features
 
-Designed in accordance with strict WCAG AAA/AA sunlight readability standards:
+### Driver Experience & Cockpit
+- **Single Active Task Focus**: Displays only current active assignment, route corridor, destination hub, and required tonnage.
+- **Turn-by-Turn Navigation**: One-tap native Google Maps launcher with automatic highway routing across NH 66, NH 766, and NH 544.
+- **Instant Emergency Actions**: Dedicated stacked >= 56dp high-contrast buttons for **"Call Office"** and **"Help / Breakdown"**.
+- **Delivery Proof Flow (POD)**:
+  - 4-digit security PIN verification.
+  - Parcel photo capture with preview.
+  - Interactive touch signature pad.
+- **Real-Time Earnings & Bata**: Transparent breakdown of base pay, trip bata, allowances, and payout status.
+- **Bilingual Interface**: Full localization support for **Malayalam** and **English**.
 
-| Token | Value | Rationale |
-| :--- | :--- | :--- |
-| **Canvas Background** | `#FFFFFF` | Maximum ambient contrast in bright sunlight |
-| **Card Surface** | `#F4F5F3` | Subtle elevation without low-contrast shadows |
-| **Primary Text** | `#111111` | Extreme readability ($\ge 18.88:1$ contrast ratio) |
-| **Secondary Text** | `#3F4541` | High contrast secondary labels ($\ge 7.82:1$) |
-| **Brand Accent** | `#0B6B3A` | Deep forest green for primary calls to action ($\ge 5.31:1$) |
-| **Status Chips** | Dual Coding | Every status combines a distinct color, an icon, and a textual label |
-| **Typography** | Noto Sans + Noto Sans Malayalam | 100% offline bundled TTF assets (no network font requests) |
-| **Type Scale** | Large & Legible | Body $\ge 18\text{sp}$, Secondary $\ge 16\text{sp}$, Numbers $\ge 32\text{sp}$ |
-| **Touch Targets** | $\ge 56\text{dp}$ Height | Minimum full-width touch areas for easy one-hand driving operation |
-
----
-
-## 🛠️ Tech Stack & Architecture
-
-- **Framework**: [Flutter](https://flutter.dev) (SDK $\ge 3.0$) / Dart
-- **Architecture**: Domain-driven repository pattern with immutable models (`Trip`, `Driver`, `Truck`).
-- **State Management**: Reactive state notification via persistent `LocalFleetRepository` backed by local JSON storage.
-- **Localization**: Official Flutter `gen-l10n` (`intl`) with English (`app_en.arb`) and Malayalam (`app_ml.arb`).
-- **Platform**: Android (`arm64-v8a`, `armeabi-v7a`, `x86_64`) targeting modern Android SDKs.
+### Fleet Admin & Dispatch Operations
+- **Interactive Fleet Tracking Map**: OpenStreetMap integration with dark midnight contrast, dynamic truck markers, and zero watermark crutches.
+- **Dynamic Fleet Registration**: Add commercial heavy haulers on the fly with automatic backend database synchronization.
+- **Instant Dispatch**: Assign consignments to onboarded drivers with live WebSocket broadcasts.
+- **Active Trip Monitoring**: Track progress, milestone completion, and driver telemetry in real time.
+- **Driver Directory**: View licenses, experience, assigned trucks, and one-tap emergency call shortcuts.
 
 ---
 
-## 🧪 Testing & Verification
+## Architecture & Repositories
 
-SmartFleet includes a comprehensive test suite of **64 automated tests** covering unit models, localization, multi-scale widget rendering, and end-to-end integration flows:
+- **Mobile Client**: [JishnuPG-tech/SmartFleet-flutter](https://github.com/JishnuPG-tech/SmartFleet-flutter)
+- **FastAPI Backend Server**: [JishnuPG-tech/SmartFleet-Backend](https://github.com/JishnuPG-tech/SmartFleet-Backend)
+- **Live Cloud API Endpoint**: `https://jishnupg-opencode-cli.hf.space/preview/8000/api/v1`
 
-```bash
-# Run all tests headlessly
-flutter test --no-pub
+---
+
+## Project Structure
+
+```
+SmartFleet-flutter/
+├── android/               # Native Android configuration, ProGuard, & manifest
+├── apk/                   # Pre-compiled production APK binaries & SHA256 checksums
+│   ├── SHA256SUMS.txt
+│   ├── SmartFleet-latest.apk
+│   └── SmartFleet-v2.6.1-release.apk*├── assets/                # Offline TTF fonts (Noto Sans Malayalam) & icons
+├── lib/
+│   ├── core/
+│   │   ├── data/          # Repository, API client, & immutable models
+│   │   ├── design/        # Tokens, enterprise theme, & reusable components
+│   │   ├── maps/          # Leaflet / OpenStreetMap integration
+│   │   └── services/      # In-app OTA updater & file provider services
+│   ├── l10n/              # ARB localization files (English & Malayalam)
+│   ├── screens/
+│   │   ├── admin/         # Dispatch, fleet management, & analytics tabs
+│   │   ├── auth/          # Onboarding, driver login, & role selection
+│   │   └── driver/        # Driver cockpit, trip navigation, & POD flow
+│   └── main.dart          # Application entrypoint & theme initialization
+├── test/                  # 64+ automated unit and integration tests
+├── pubspec.yaml           # Dependencies, assets, & version definition
+└── README.md
 ```
 
-### Layout Stability Guarantee
-All UI screens are tested across:
-- **Viewport**: Narrow 360dp width (standard budget Android devices).
-- **Text Scale**: $1.0\times$ baseline and $1.5\times$ accessibility scale.
-- **Localization**: English and Malayalam.
-- **Result**: **0 RenderFlex overflows** across all 28 widget configurations.
-
 ---
 
-## 📦 Building Release APKs
+## Build & Installation
 
-Build optimized release APKs split per CPU architecture:
+### Prerequisites
+- Flutter SDK >= 3.20.0
+- Android SDK 34+
+- Java JDK 17
 
+### Local Compilation
 ```bash
-flutter build apk --release --split-per-abi
+# Clone the repository
+git clone https://github.com/JishnuPG-tech/SmartFleet-flutter.git
+cd SmartFleet-flutter
+
+# Get dependencies
+flutter pub get
+
+# Run tests
+flutter test
+
+# Compile production release APK
+flutter build apk --release --target-platform android-arm64
 ```
 
-Generated APKs:
-- `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`
-- `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk`
-- `build/app/outputs/flutter-apk/app-x86_64-release.apk`
-
 ---
 
-## 📄 License
+## License
 
 Proprietary © SmartFleet Logistics Kerala. All rights reserved.
