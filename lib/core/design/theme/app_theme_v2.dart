@@ -3,7 +3,6 @@ import "package:flutter/services.dart";
 import "../tokens/app_colors.dart";
 import "../tokens/app_typography.dart";
 import "../tokens/app_spacing.dart";
-import "theme_controller.dart";
 
 class AppThemeV2 {
   static ThemeData buildTheme(
@@ -20,7 +19,12 @@ class AppThemeV2 {
       accent: palette,
     );
 
-    final isDark = effectiveCanvas != AppCanvasTheme.pureWhite;
+    final isDark = effectiveCanvas == AppCanvasTheme.midnightBlack ||
+        effectiveCanvas == AppCanvasTheme.claudeWarm ||
+        effectiveCanvas == AppCanvasTheme.claudeDeep ||
+        effectiveCanvas == AppCanvasTheme.sageDark ||
+        effectiveCanvas == AppCanvasTheme.blueDark ||
+        effectiveCanvas == AppCanvasTheme.offWhiteDark;
     final resolvedBrightness = isDark ? Brightness.dark : Brightness.light;
 
     return ThemeData(

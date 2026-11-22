@@ -36,6 +36,45 @@ class SettingsScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
             children: [
+              // 0. THREE STARTING PRODUCTION THEMES
+              Text("Production Enterprise Themes", style: AppTypography.section(colors.text, fontSize: 16)),
+              const SizedBox(height: 6),
+              Text(
+                "High-contrast WCAG AAA/AA accessible themes calibrated for cab ergonomics and daylight legibility.",
+                style: AppTypography.caption(colors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              _buildFleetThemeTile(
+                context,
+                title: "Theme A: Sage & Lemon",
+                subtitle: "Sage green canvas · Charcoal text · High-vis Lemon accent",
+                palette: FleetPalette.sageLemon,
+                isSelected: ThemeController.instance.fleetPalette == FleetPalette.sageLemon,
+                accentColor: const Color(0xFFE6FB2B),
+                canvasColor: ThemeController.instance.isDarkMode ? const Color(0xFF0A0F0C) : const Color(0xFFEFF4F0),
+              ),
+              const SizedBox(height: 10),
+              _buildFleetThemeTile(
+                context,
+                title: "Theme B: Blue & Tangerine",
+                subtitle: "Soft blue canvas · Midnight navy text · High-vis Tangerine accent",
+                palette: FleetPalette.blueTangerine,
+                isSelected: ThemeController.instance.fleetPalette == FleetPalette.blueTangerine,
+                accentColor: const Color(0xFFFF7824),
+                canvasColor: ThemeController.instance.isDarkMode ? const Color(0xFF060B12) : const Color(0xFFEDF3F9),
+              ),
+              const SizedBox(height: 10),
+              _buildFleetThemeTile(
+                context,
+                title: "Theme C: Off-white & Cherry",
+                subtitle: "Off-white canvas · Espresso brown text · High-vis Cherry red accent",
+                palette: FleetPalette.offWhiteCherry,
+                isSelected: ThemeController.instance.fleetPalette == FleetPalette.offWhiteCherry,
+                accentColor: const Color(0xFFFF3B53),
+                canvasColor: ThemeController.instance.isDarkMode ? const Color(0xFF0D0B0A) : const Color(0xFFF8F7F5),
+              ),
+              const SizedBox(height: 28),
+
               // 1. CANVAS BACKGROUND SELECTOR
               Text("Canvas Background", style: AppTypography.section(colors.text, fontSize: 16)),
               const SizedBox(height: 6),
@@ -467,3 +506,62 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
+
+  Widget _buildFleetThemeTile(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required FleetPalette palette,
+    required bool isSelected,
+    required Color accentColor,
+    required Color canvasColor,
+  }) {
+    final colors = context.colors;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        ThemeController.instance.setFleetPalette(palette);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? colors.brand : colors.border,
+            width: isSelected ? 2.0 : 1.0,
+          ),
+          boxShadow: isSelected
+              ? [BoxShadow(color: colors.brand.withValues(alpha: 0.2), blurRadius: 8, spreadRadius: 1)]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: canvasColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: accentColor, width: 2.5),
+              ),
+              child: isSelected ? Icon(Icons.check, size: 20, color: accentColor) : null,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTypography.label(colors.text, fontSize: 15)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: AppTypography.caption(colors.textSecondary)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }

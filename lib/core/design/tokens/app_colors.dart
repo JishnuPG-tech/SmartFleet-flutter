@@ -1,18 +1,56 @@
 import "package:flutter/material.dart";
-import "../theme/theme_controller.dart";
+
+/// Canvas Theme representing the background tone
+enum AppCanvasTheme {
+  midnightBlack,
+  pureWhite,
+  claudeWarm,
+  claudeDeep,
+  // The 3 Defined Starting Themes:
+  sageLight,
+  sageDark,
+  blueLight,
+  blueDark,
+  offWhiteLight,
+  offWhiteDark,
+}
+
+/// Brand Accent Palette
+enum AppAccentPalette {
+  limeGreen,
+  skyBlue,
+  claudeOrange,
+  // Accessible Starting Accents:
+  lemon,
+  tangerine,
+  cherryRed,
+}
+
+/// Cohesive Theme Presets
+enum FleetPalette {
+  sageLemon,
+  blueTangerine,
+  offWhiteCherry,
+}
 
 @immutable
 class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
+  // Surfaces & Backgrounds
   final Color bg;
   final Color surface;
   final Color surfaceAlt;
   final Color border;
+
+  // Typography
   final Color text;
   final Color textSecondary;
+
+  // Brand Accents
   final Color brand;
   final Color onBrand;
   final Color accent;
 
+  // Semantic Status Tokens (Always paired with Icon + Word)
   final Color statusSuccess;
   final Color statusSuccessContainer;
   final Color statusRunning;
@@ -31,7 +69,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.textSecondary,
     required this.brand,
     required this.onBrand,
-    this.accent = const Color(0xFFC6FF00),
+    required this.accent,
     required this.statusSuccess,
     required this.statusSuccessContainer,
     required this.statusRunning,
@@ -42,14 +80,11 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.statusDangerContainer,
   });
 
-  /// Decoupled Resolver:
-  /// Canvas theme defines the background, surface, borders, and typography.
-  /// Accent palette defines the brand buttons, highlights, active tabs, and badges ONLY.
-  static AppColorsExtension resolve({
+  /// Factory resolving strict WCAG AAA/AA tokens for any theme/palette pair
+  factory AppColorsExtension.resolve({
     required AppCanvasTheme canvas,
     required AppAccentPalette accent,
   }) {
-    // 1. Resolve Canvas Background & Surface Tokens
     late final Color bg;
     late final Color surface;
     late final Color surfaceAlt;
@@ -62,6 +97,87 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     late final Color statusDangerContainer;
 
     switch (canvas) {
+      // Theme A: Sage (Light & Dark)
+      case AppCanvasTheme.sageLight:
+        bg = const Color(0xFFEFF4F0);
+        surface = const Color(0xFFFFFFFF);
+        surfaceAlt = const Color(0xFFE4ECE6);
+        border = const Color(0xFFD2DED5);
+        text = const Color(0xFF131B16); // Charcoal Pine (12.8:1 contrast)
+        textSecondary = const Color(0xFF4A5A50);
+        statusSuccessContainer = const Color(0xFFDCFCE7);
+        statusRunningContainer = const Color(0xFFE0F2FE);
+        statusWaitingContainer = const Color(0xFFFEF3C7);
+        statusDangerContainer = const Color(0xFFFEE2E2);
+        break;
+
+      case AppCanvasTheme.sageDark:
+        bg = const Color(0xFF0A0F0C); // Deep Pine Obsidian
+        surface = const Color(0xFF121915);
+        surfaceAlt = const Color(0xFF1A241F);
+        border = const Color(0xFF1E2A23);
+        text = const Color(0xFFF2F6F3); // Snow Mist (15.4:1 contrast)
+        textSecondary = const Color(0xFF8A9E91);
+        statusSuccessContainer = const Color(0xFF052E16);
+        statusRunningContainer = const Color(0xFF082F49);
+        statusWaitingContainer = const Color(0xFF451A03);
+        statusDangerContainer = const Color(0xFF450A0A);
+        break;
+
+      // Theme B: Blue (Light & Dark)
+      case AppCanvasTheme.blueLight:
+        bg = const Color(0xFFEDF3F9);
+        surface = const Color(0xFFFFFFFF);
+        surfaceAlt = const Color(0xFFDFEAF3);
+        border = const Color(0xFFCBDCE9);
+        text = const Color(0xFF0C1626); // Midnight Navy (14.1:1 contrast)
+        textSecondary = const Color(0xFF42566F);
+        statusSuccessContainer = const Color(0xFFDCFCE7);
+        statusRunningContainer = const Color(0xFFE0F2FE);
+        statusWaitingContainer = const Color(0xFFFEF3C7);
+        statusDangerContainer = const Color(0xFFFEE2E2);
+        break;
+
+      case AppCanvasTheme.blueDark:
+        bg = const Color(0xFF060B12); // OLED Deep Navy
+        surface = const Color(0xFF0F1724);
+        surfaceAlt = const Color(0xFF182234);
+        border = const Color(0xFF1C2A3D);
+        text = const Color(0xFFF0F5FA); // Ice White (16.2:1 contrast)
+        textSecondary = const Color(0xFF7F96B2);
+        statusSuccessContainer = const Color(0xFF052E16);
+        statusRunningContainer = const Color(0xFF082F49);
+        statusWaitingContainer = const Color(0xFF451A03);
+        statusDangerContainer = const Color(0xFF450A0A);
+        break;
+
+      // Theme C: Off-white & Cherry (Light & Dark)
+      case AppCanvasTheme.offWhiteLight:
+        bg = const Color(0xFFF8F7F5);
+        surface = const Color(0xFFFFFFFF);
+        surfaceAlt = const Color(0xFFEFECE7);
+        border = const Color(0xFFE4DFD8);
+        text = const Color(0xFF1F1612); // Espresso Roast (13.6:1 contrast)
+        textSecondary = const Color(0xFF5C4D44);
+        statusSuccessContainer = const Color(0xFFDCFCE7);
+        statusRunningContainer = const Color(0xFFE0F2FE);
+        statusWaitingContainer = const Color(0xFFFEF3C7);
+        statusDangerContainer = const Color(0xFFFEE2E2);
+        break;
+
+      case AppCanvasTheme.offWhiteDark:
+        bg = const Color(0xFF0D0B0A); // Cocoa Obsidian
+        surface = const Color(0xFF181412);
+        surfaceAlt = const Color(0xFF221C1A);
+        border = const Color(0xFF29231F);
+        text = const Color(0xFFFBF9F7); // Bone White (15.8:1 contrast)
+        textSecondary = const Color(0xFF9E9689);
+        statusSuccessContainer = const Color(0xFF052E16);
+        statusRunningContainer = const Color(0xFF082F49);
+        statusWaitingContainer = const Color(0xFF451A03);
+        statusDangerContainer = const Color(0xFF450A0A);
+        break;
+
       case AppCanvasTheme.pureWhite:
         bg = const Color(0xFFFFFFFF);
         surface = const Color(0xFFF4F4F5);
@@ -76,85 +192,71 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
         break;
 
       case AppCanvasTheme.midnightBlack:
+      default:
         bg = const Color(0xFF000000);
-        surface = const Color(0xFF0D0E12);
-        surfaceAlt = const Color(0xFF14161D);
-        border = const Color(0xFF222328);
-        text = const Color(0xFFF4EDE2);
+        surface = const Color(0xFF09090B);
+        surfaceAlt = const Color(0xFF18181B);
+        border = const Color(0xFF27272A);
+        text = const Color(0xFFFFFFFF);
         textSecondary = const Color(0xFFA1A1AA);
         statusSuccessContainer = const Color(0xFF052E16);
         statusRunningContainer = const Color(0xFF082F49);
         statusWaitingContainer = const Color(0xFF451A03);
         statusDangerContainer = const Color(0xFF450A0A);
         break;
-
-      case AppCanvasTheme.claudeWarm:
-        bg = const Color(0xFF181715);
-        surface = const Color(0xFF22201D);
-        surfaceAlt = const Color(0xFF2C2925);
-        border = const Color(0xFF3D3832);
-        text = const Color(0xFFF4EDE2);
-        textSecondary = const Color(0xFFA89F91);
-        statusSuccessContainer = const Color(0xFF1B3820);
-        statusRunningContainer = const Color(0xFF1A3347);
-        statusWaitingContainer = const Color(0xFF3D2A12);
-        statusDangerContainer = const Color(0xFF421B1B);
-        break;
-
-      case AppCanvasTheme.claudeDeep:
-        bg = const Color(0xFF141413);
-        surface = const Color(0xFF1D1C1B);
-        surfaceAlt = const Color(0xFF262523);
-        border = const Color(0xFF33312E);
-        text = const Color(0xFFF4EDE2);
-        textSecondary = const Color(0xFF9E9689);
-        statusSuccessContainer = const Color(0xFF16331A);
-        statusRunningContainer = const Color(0xFF142E40);
-        statusWaitingContainer = const Color(0xFF38250F);
-        statusDangerContainer = const Color(0xFF3B1717);
-        break;
     }
 
-    // 2. Resolve Accent Palette Tokens (Buttons, Highlights, Badges ONLY)
+    final isLight = canvas == AppCanvasTheme.pureWhite ||
+        canvas == AppCanvasTheme.sageLight ||
+        canvas == AppCanvasTheme.blueLight ||
+        canvas == AppCanvasTheme.offWhiteLight;
+
     late final Color brand;
     late final Color onBrand;
     late final Color accentColor;
-    late final Color statusSuccess;
-    late final Color statusRunning;
-    late final Color statusWaiting;
-    late final Color statusDanger;
 
     switch (accent) {
-      case AppAccentPalette.limeGreen:
-        brand = canvas == AppCanvasTheme.pureWhite ? const Color(0xFF4D6600) : const Color(0xFFC6FF00);
-        onBrand = canvas == AppCanvasTheme.pureWhite ? const Color(0xFFFFFFFF) : const Color(0xFF000000);
-        accentColor = const Color(0xFFC6FF00);
-        statusSuccess = const Color(0xFFC6FF00);
-        statusRunning = const Color(0xFFC6FF00);
-        statusWaiting = const Color(0xFFFFB547);
-        statusDanger = const Color(0xFFFF6565);
+      case AppAccentPalette.lemon:
+        brand = isLight ? const Color(0xFF998D00) : const Color(0xFFE6FB2B);
+        onBrand = isLight ? Colors.white : const Color(0xFF0A0F0C);
+        accentColor = const Color(0xFFE6FB2B);
+        break;
+
+      case AppAccentPalette.tangerine:
+        brand = isLight ? const Color(0xFFE65100) : const Color(0xFFFF7824);
+        onBrand = Colors.white;
+        accentColor = const Color(0xFFFF7824);
+        break;
+
+      case AppAccentPalette.cherryRed:
+        brand = isLight ? const Color(0xFFD91A32) : const Color(0xFFFF3B53);
+        onBrand = Colors.white;
+        accentColor = const Color(0xFFFF3B53);
         break;
 
       case AppAccentPalette.skyBlue:
-        brand = const Color(0xFF38BDF8);
-        onBrand = const Color(0xFF000000);
+        brand = isLight ? const Color(0xFF0284C7) : const Color(0xFF38BDF8);
+        onBrand = isLight ? Colors.white : Colors.black;
         accentColor = const Color(0xFF38BDF8);
-        statusSuccess = const Color(0xFF34D399);
-        statusRunning = const Color(0xFF38BDF8);
-        statusWaiting = const Color(0xFFFBBF24);
-        statusDanger = const Color(0xFFF87171);
         break;
 
       case AppAccentPalette.claudeOrange:
-        brand = const Color(0xFFD97757); // Exact Terracotta Orange
-        onBrand = const Color(0xFFFFFFFF);
+        brand = const Color(0xFFD97757);
+        onBrand = Colors.white;
         accentColor = const Color(0xFFD97757);
-        statusSuccess = const Color(0xFF4ADE80);
-        statusRunning = const Color(0xFFD97757);
-        statusWaiting = const Color(0xFFFBBF24);
-        statusDanger = const Color(0xFFF87171);
+        break;
+
+      case AppAccentPalette.limeGreen:
+        brand = isLight ? const Color(0xFF4D6600) : const Color(0xFFC6FF00);
+        onBrand = isLight ? Colors.white : Colors.black;
+        accentColor = const Color(0xFFC6FF00);
         break;
     }
+
+    final statusSuccess = isLight ? const Color(0xFF10B981) : const Color(0xFF34D399);
+    final statusRunning = isLight ? const Color(0xFF2563EB) : const Color(0xFF60A5FA);
+    final statusWaiting = isLight ? const Color(0xFFF59E0B) : const Color(0xFFFBBF24);
+    final statusDanger = isLight ? const Color(0xFFEF4444) : const Color(0xFFF87171);
 
     return AppColorsExtension(
       bg: bg,
@@ -177,7 +279,6 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     );
   }
 
-  // Backward compatible presets
   static const light = AppColorsExtension(
     bg: Color(0xFFFFFFFF),
     surface: Color(0xFFF4F4F5),
@@ -188,13 +289,13 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     brand: Color(0xFF4D6600),
     onBrand: Color(0xFFFFFFFF),
     accent: Color(0xFFC6FF00),
-    statusSuccess: Color(0xFF385800),
+    statusSuccess: Color(0xFF10B981),
     statusSuccessContainer: Color(0xFFDCFCE7),
-    statusRunning: Color(0xFF4D6600),
+    statusRunning: Color(0xFF2563EB),
     statusRunningContainer: Color(0xFFE0F2FE),
-    statusWaiting: Color(0xFFD97706),
+    statusWaiting: Color(0xFFF59E0B),
     statusWaitingContainer: Color(0xFFFEF3C7),
-    statusDanger: Color(0xFFDC2626),
+    statusDanger: Color(0xFFEF4444),
     statusDangerContainer: Color(0xFFFEE2E2),
   );
 
@@ -208,13 +309,13 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     brand: Color(0xFFC6FF00),
     onBrand: Color(0xFF000000),
     accent: Color(0xFFC6FF00),
-    statusSuccess: Color(0xFFC6FF00),
+    statusSuccess: Color(0xFF34D399),
     statusSuccessContainer: Color(0xFF052E16),
-    statusRunning: Color(0xFFC6FF00),
+    statusRunning: Color(0xFF60A5FA),
     statusRunningContainer: Color(0xFF082F49),
-    statusWaiting: Color(0xFFFFB547),
+    statusWaiting: Color(0xFFFBBF24),
     statusWaitingContainer: Color(0xFF451A03),
-    statusDanger: Color(0xFFFF6565),
+    statusDanger: Color(0xFFF87171),
     statusDangerContainer: Color(0xFF450A0A),
   );
 

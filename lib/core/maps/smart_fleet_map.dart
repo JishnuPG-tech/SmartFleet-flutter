@@ -6,8 +6,8 @@ import "../design/tokens/app_typography.dart";
 import "../design/tokens/app_spacing.dart";
 import "../data/models/truck.dart";
 
-/// Reusable map component powered by official OpenStreetMap tiles with zero API keys or watermarks.
-/// Uses ColorFilter matrix inversion in Dark Mode for a sleek Midnight logistics aesthetic.
+/// Vela-Powered Map Engine:
+/// High-contrast OpenStreetMap + CartoDB Positron / Dark Matter tiles with zero Google API keys.
 class SmartFleetMap extends StatelessWidget {
   final LatLng center;
   final double zoom;
@@ -37,53 +37,41 @@ class SmartFleetMap extends StatelessWidget {
     final colors = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // High-Contrast CartoDB tiles (Vela Maps standard)
+    final tileUrl = isDark
+        ? "https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
+        : "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png";
+
     return Container(
       color: colors.bg,
-      child: ClipRRect(
-        child: FlutterMap(
-          mapController: controller,
-          options: MapOptions(
-            initialCenter: center,
-            initialZoom: zoom,
-            minZoom: minZoom,
-            maxZoom: maxZoom,
-            interactionOptions: InteractionOptions(
-              flags: interactive ? InteractiveFlag.all : InteractiveFlag.none,
-            ),
-            onTap: onTap,
+      child: FlutterMap(
+        mapController: controller,
+        options: MapOptions(
+          initialCenter: center,
+          initialZoom: zoom,
+          minZoom: minZoom,
+          maxZoom: maxZoom,
+          interactionOptions: InteractionOptions(
+            flags: interactive ? InteractiveFlag.all : InteractiveFlag.none,
           ),
-          children: [
-            TileLayer(
-              urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-              userAgentPackageName: "com.smartfleet.app.smartfleet_flutter",
-              maxZoom: 19,
-              tileBuilder: isDark
-                  ? (context, tileWidget, tile) {
-                      return ColorFiltered(
-                        colorFilter: const ColorFilter.matrix([
-                          -0.82, 0, 0, 0, 230,
-                          0, -0.82, 0, 0, 230,
-                          0, 0, -0.82, 0, 230,
-                          0, 0, 0, 1, 0,
-                        ]),
-                        child: tileWidget,
-                      );
-                    }
-                  : null,
-              errorTileCallback: (tile, error, stackTrace) {
-                // Graceful fallback on network/tile failure
-              },
-            ),
-            if (polylines != null && polylines!.isNotEmpty)
-              PolylineLayer(
-                polylines: polylines!,
-              ),
-            if (markers != null && markers!.isNotEmpty)
-              MarkerLayer(
-                markers: markers!,
-              ),
-          ],
+          onTap: onTap,
         ),
+        children: [
+          TileLayer(
+            urlTemplate: tileUrl,
+            userAgentPackageName: "com.smartfleet.kerala",
+            subdomains: const ["a", "b", "c", "d"],
+            tileProvider: NetworkTileProvider(),
+          ),
+          if (polylines != null && polylines!.isNotEmpty)
+            PolylineLayer(
+              polylines: polylines!,
+            ),
+          if (markers != null && markers!.isNotEmpty)
+            MarkerLayer(
+              markers: markers!,
+            ),
+        ],
       ),
     );
   }

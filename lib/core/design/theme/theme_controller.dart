@@ -1,66 +1,73 @@
 import "package:flutter/material.dart";
-
-enum AppCanvasTheme {
-  midnightBlack,
-  pureWhite,
-  claudeWarm,
-  claudeDeep,
-}
-
-enum AppAccentPalette {
-  limeGreen,
-  skyBlue,
-  claudeOrange,
-}
+import "../tokens/app_colors.dart";
 
 class ThemeController extends ChangeNotifier {
   static final ThemeController instance = ThemeController._();
   ThemeController._();
 
-  AppCanvasTheme _canvasTheme = AppCanvasTheme.midnightBlack;
+  FleetPalette _fleetPalette = FleetPalette.sageLemon;
+  FleetPalette get fleetPalette => _fleetPalette;
+
+  AppCanvasTheme _canvasTheme = AppCanvasTheme.sageDark;
   AppCanvasTheme get canvasTheme => _canvasTheme;
 
-  AppAccentPalette _palette = AppAccentPalette.claudeOrange;
+  AppAccentPalette _palette = AppAccentPalette.lemon;
   AppAccentPalette get palette => _palette;
+
+  bool _isDark = true;
+  bool get isDarkMode => _isDark;
 
   bool _hasCompletedOnboarding = false;
   bool get hasCompletedOnboarding => _hasCompletedOnboarding;
 
-  ThemeMode get mode {
-    if (_canvasTheme == AppCanvasTheme.pureWhite) return ThemeMode.light;
-    return ThemeMode.dark;
-  }
+  ThemeMode get mode => _isDark ? ThemeMode.dark : ThemeMode.light;
 
-  void setCanvasTheme(AppCanvasTheme newCanvas) {
-    if (_canvasTheme == newCanvas) return;
-    _canvasTheme = newCanvas;
+  void setFleetPalette(FleetPalette newPalette) {
+    _fleetPalette = newPalette;
+    switch (newPalette) {
+      case FleetPalette.sageLemon:
+        _canvasTheme = _isDark ? AppCanvasTheme.sageDark : AppCanvasTheme.sageLight;
+        _palette = AppAccentPalette.lemon;
+        break;
+      case FleetPalette.blueTangerine:
+        _canvasTheme = _isDark ? AppCanvasTheme.blueDark : AppCanvasTheme.blueLight;
+        _palette = AppAccentPalette.tangerine;
+        break;
+      case FleetPalette.offWhiteCherry:
+        _canvasTheme = _isDark ? AppCanvasTheme.offWhiteDark : AppCanvasTheme.offWhiteLight;
+        _palette = AppAccentPalette.cherryRed;
+        break;
+    }
     notifyListeners();
   }
 
-  void setThemeMode(ThemeMode mode) {
-    if (mode == ThemeMode.light) {
-      setCanvasTheme(AppCanvasTheme.pureWhite);
-    } else {
-      setCanvasTheme(AppCanvasTheme.midnightBlack);
-    }
-  }
-
-  void toggleTheme() {
-    if (_canvasTheme == AppCanvasTheme.pureWhite) {
-      setCanvasTheme(AppCanvasTheme.midnightBlack);
-    } else {
-      setCanvasTheme(AppCanvasTheme.pureWhite);
-    }
+  void setCanvasTheme(AppCanvasTheme newCanvas) {
+    _canvasTheme = newCanvas;
+    _isDark = newCanvas == AppCanvasTheme.midnightBlack ||
+        newCanvas == AppCanvasTheme.claudeWarm ||
+        newCanvas == AppCanvasTheme.claudeDeep ||
+        newCanvas == AppCanvasTheme.sageDark ||
+        newCanvas == AppCanvasTheme.blueDark ||
+        newCanvas == AppCanvasTheme.offWhiteDark;
+    notifyListeners();
   }
 
   void setPalette(AppAccentPalette newPalette) {
-    if (_palette == newPalette) return;
     _palette = newPalette;
     notifyListeners();
   }
 
+  void toggleTheme() {
+    _isDark = !_isDark;
+    setFleetPalette(_fleetPalette);
+  }
+
+  void setThemeMode(ThemeMode newMode) {
+    _isDark = newMode == ThemeMode.dark;
+    setFleetPalette(_fleetPalette);
+  }
+
   void completeOnboarding() {
-    if (_hasCompletedOnboarding) return;
     _hasCompletedOnboarding = true;
     notifyListeners();
   }
@@ -70,7 +77,5 @@ class ThemeController extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool isDark(BuildContext context) {
-    return _canvasTheme != AppCanvasTheme.pureWhite;
-  }
+  bool isDark(BuildContext context) => _isDark;
 }
